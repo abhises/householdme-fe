@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# householdme-fe
 
-## Getting Started
+Next.js 16 (App Router, TypeScript) frontend for HouseholdMe: the public website, built in the theme of
+`../HouseholdMe/Householdme v2.dc.html`, plus the admin panel at `/admin`.
 
-First, run the development server:
+All data comes from the Express API in `../householdme-be`; the frontend has no database access of its own.
+
+## Quick start
+
+Start the backend first (see `../householdme-be/README.md`), then:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local      # API_URL defaults to http://localhost:4100
+npm install
+npm run dev                     # http://localhost:3100
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Site: http://localhost:3100
+- Admin: http://localhost:3100/admin (sign in with the seeded admin account)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it talks to the backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Server components** (public pages) call `API_URL/api/public/*` directly with `cache: "no-store"`,
+  so admin edits show up on the next page load.
+- **The browser** only talks to this origin: `next.config.ts` rewrites `/api/*` and `/uploads/*` to the
+  backend. The admin session cookie (`hm_admin`, httpOnly) is therefore first-party, and no CORS setup is needed.
+- `src/proxy.ts` (Next 16's replacement for middleware) redirects `/admin/*` to the login page when there is no
+  session cookie. The backend verifies the session on every admin request.
 
-## Learn More
+## Pages
 
-To learn more about Next.js, take a look at the following resources:
+| URL | Page |
+| --- | --- |
+| `/` | Home: hero guide, trust facts, latest guides, categories, test method, testers, newsletter |
+| `/category/[slug]` | Category with its buying guides |
+| `/guide/[slug]` | Buying guide: picks, results table, FAQ; long-form guides add comparison table, deep dives, results by test, buying advice, glossary, sticky buy bar and newsletter popup |
+| `/review/[slug]` | Product review with gallery, score card, price history, results, specs, alternatives |
+| `/author/[slug]`, `/team` | Editorial team |
+| `/how-we-test`, `/info/[slug]` | Method and transparency pages |
+| `/deals`, `/search`, `/newsletter` | Deals, search, newsletter signup |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Admin panel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Dashboard, buying guides (including every long-form section), products and reviews, categories, authors,
+deals, info pages, media library (upload, pick and delete), subscribers (CSV export), site/home/method
+settings, and password change.
 
-## Deploy on Vercel
+## Layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/app/(site)/      public pages (server components)
+src/app/admin/       login + (panel)/ admin screens (client components)
+src/components/site/ header, footer, cards, newsletter form, guide/review client widgets
+src/components/admin/ form fields, repeatable list editor, media picker, tables
+src/lib/             API clients and shared types
+src/app/globals.css  theme tokens and styles ported from the design
+```
