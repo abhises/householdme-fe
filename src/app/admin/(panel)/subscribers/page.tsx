@@ -1,26 +1,52 @@
 "use client";
 
-import { PageHeader, ResourceTable } from "@/components/admin/ui";
+import { useState } from "react";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
+import { Pagination } from "@/components/admin/Pagination";
+import { usePagedList } from "@/components/admin/usePagedList";
+import { adminApi, errorText } from "@/lib/admin-api";
 import type { Subscriber } from "@/lib/types";
 
 export default function SubscribersPage() {
+  const confirm = useConfirm();
+  const [q, setQ] = useState("");
+  const { rows, meta, error, setError, load, page, setPage, setPageSize } = usePagedList<Subscriber>("subscribers", q ? `q=${encodeURIComponent(q)}` : "");
+  const remove = async (s: Subscriber) => {
+    if (!(await confirm({ title: "Remove subscriber?", message: `${s.email} will be removed from the newsletter list.`, confirmLabel: "Remove" }))) return;
+    try {
+      await adminApi(`/subscribers/${s.id}`, { method: "DELETE" });
+      load();
+    } catch (e) {
+      setError(errorText(e));
+    }
+  };
   return (
     <>
-      <PageHeader
-        title="Newsletter subscribers"
-        subtitle="Collected from the newsletter forms, price alerts and the popup."
-        actions={<a href="/api/admin/subscribers/export.csv" className="a-btn">Export CSV</a>}
-      />
-      <ResourceTable<Subscriber>
-        resource="subscribers"
-        emptyText="No subscribers yet."
-        deleteLabel={(s) => s.email}
-        columns={[
-          { label: "Email", render: (s) => <strong>{s.email}</strong> },
-          { label: "Source", render: (s) => (s.source ? <span className="a-badge">{s.source}</span> : <span className="small">–</span>) },
-          { label: "Subscribed", render: (s) => new Date(s.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) },
-        ]}
-      />
+      <div className="ad-head">
+        <h1>Subscribers {meta && <span className="ad-hint">({meta.total})</span>}</h1>
+        <a className="ad-btn" href="/api/admin/subscribers/export.csv">Export CSV</a>
+      </div>
+      <div className="ad-filters">
+        <input placeholder="Search email" value={q} onChange={(e) => { setQ(e.target.value); if (page > 1) setPage(1); }} />
+      </div>
+      {error && <p className="ad-error">{error}</p>}
+      {!rows ? <p>Loading…</p> : (
+        <table className="ad-table">
+          <thead><tr><th>Email</th><th>Source</th><th>Signed up</th><th></th></tr></thead>
+          <tbody>
+            {rows.map((s) => (
+              <tr key={s.id}>
+                <td className="ad-cell-main">{s.email}</td>
+                <td>{s.source ?? "—"}</td>
+                <td>{new Date(s.createdAt).toLocaleString()}</td>
+                <td className="ad-cell-end"><button className="ad-btn ad-btn--sm ad-btn--danger" onClick={() => remove(s)}>Remove</button></td>
+              </tr>
+            ))}
+            {rows.length === 0 && <tr><td colSpan={4}>No subscribers yet.</td></tr>}
+          </tbody>
+        </table>
+      )}
+      {meta && <Pagination {...meta} onChange={setPage} onPageSizeChange={setPageSize} />}
     </>
   );
 }

@@ -2,328 +2,285 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import {
-  Checkbox,
-  JsonField,
-  LinesField,
-  NumberField,
-  ObjectList,
-  ParagraphsField,
-  SelectField,
-  SlugField,
-  TableField,
-  TextArea,
-  TextField,
-} from "@/components/admin/fields";
-import { ImageField } from "@/components/admin/media";
-import { Loading, PageHeader, Panel, SaveBar, Tabs, useList, useRecord } from "@/components/admin/ui";
+import { useEffect, useState } from "react";
+import { EditorPreview, EditorTabs, Fieldset, SaveStatus, useDocEditor } from "@/components/admin/Editor";
+import { FormFields, ImageInput, type FieldDef } from "@/components/admin/FormFields";
+import { adminApi, slugify } from "@/lib/admin-api";
 import { score } from "@/lib/format";
 import type { Author, Category, Guide, GuideFull } from "@/lib/types";
 
 const blank = {
-  slug: "",
-  title: "",
-  seoTitle: null,
-  short: "",
-  intro: "",
-  published: false,
-  categoryId: "",
-  authorId: "",
-  modelsTested: 0,
-  testWeeks: 0,
-  updatedLabel: "",
-  publishedLabel: "",
-  photoNote: "",
-  coverImage: null,
-  heroImage: null,
-  testImage: null,
-  forWho: "",
-  howTested: "",
-  howCaption: null,
-  bought: null,
-  criteria: [],
-  tableHead: null,
-  tableRows: null,
-  tableNote: null,
-  faq: [],
-  sources: [],
-  changes: [],
-  full: null,
-  sortOrder: 0,
+  slug: "", title: "", seoTitle: null, short: "", intro: "", published: false, categoryId: "", authorId: "",
+  modelsTested: 0, testWeeks: 0, updatedLabel: "", publishedLabel: "", photoNote: "", coverImage: null, heroImage: null,
+  testImage: null, forWho: "", howTested: "", howCaption: null, bought: null, criteria: [], tableHead: null, tableRows: null,
+  tableNote: null, faq: [], sources: [], changes: [], full: null, sortOrder: 0,
 } as unknown as Guide;
 
 const emptyFull: GuideFull = {
-  titles: {},
-  summary: [],
-  compare: null,
-  deep: [],
-  bars: [],
-  buyIntro: "",
-  buying: [],
-  tiers: [],
-  vsHead: [],
-  vsRows: [],
-  vsNote: "",
-  care: [],
-  skip: [],
-  skipNote: "",
-  next: [],
-  durable: [],
-  situations: [],
-  specsIntro: "",
-  specsExplained: [],
-  mistakes: [],
-  verdict: [],
-  glossary: [],
+  titles: {}, summary: [], compare: null, deep: [], bars: [], buyIntro: "", buying: [], tiers: [], vsHead: [], vsRows: [],
+  vsNote: "", care: [], skip: [], skipNote: "", next: [], durable: [], situations: [], specsIntro: "", specsExplained: [],
+  mistakes: [], verdict: [], glossary: [],
 };
 
-const TABS = ["Basics", "Content", "Results table", "FAQ & sources", "Picks", "Long-form sections"];
+type Tab = "content" | "table" | "faq" | "picks" | "longform";
+const TABS: [Tab, string][] = [["content", "Content"], ["table", "Results table"], ["faq", "FAQ & sources"], ["picks", "Picks"], ["longform", "Long-form sections"]];
 
-export default function GuideEdit() {
+const CONTENT: FieldDef[] = [
+  { key: "forWho", label: "Who is this for?", type: "textarea", rows: 5 },
+  { key: "howTested", label: "How we tested", type: "textarea", rows: 5 },
+  { key: "howCaption", label: "Test photo caption", type: "text" },
+  { key: "bought", label: "How the products were obtained", type: "textarea", help: "Added to “Why you can trust us”, e.g. “We bought 18 of the 22 machines ourselves…”" },
+  { key: "criteria", label: "Score criteria", type: "lines", help: "One per line, e.g. Suction, Battery, Ease of use, Noise. Used for the review score breakdown." },
+];
+const TABLE: FieldDef[] = [
+  { key: "tableHead", label: "Header row", type: "cells", help: "Leave the table empty to show the picks with rank, score and price." },
+  { key: "tableRows", label: "Rows", type: "table", rows: 8 },
+  { key: "tableNote", label: "Note below the table", type: "text" },
+];
+const FAQ: FieldDef[] = [
+  { key: "faq", label: "Questions", type: "list", itemLabel: "{{q}}", fields: [{ key: "q", label: "Question", type: "text" }, { key: "a", label: "Answer", type: "textarea" }] },
+  { key: "sources", label: "Sources", type: "lines" },
+  { key: "changes", label: "Changelog", type: "list", itemLabel: "{{date}} · {{text}}", fields: [{ key: "date", label: "Date", type: "text" }, { key: "text", label: "What changed", type: "text" }] },
+];
+const TITLES: FieldDef[] = [
+  { key: "buying", label: "What to look for (heading)", type: "text", half: true },
+  { key: "vs", label: "Product types table (heading)", type: "text", half: true },
+  { key: "vsToc", label: "Product types (in the table of contents)", type: "text", half: true },
+  { key: "care", label: "Maintenance (heading)", type: "text", half: true },
+  { key: "situations", label: "Situations (heading)", type: "text", half: true },
+  { key: "mistakes", label: "Mistakes (heading)", type: "text", half: true },
+];
+const pair = (a: string, al: string, b: string, bl: string, area = false): FieldDef[] => [
+  { key: a, label: al, type: "text" },
+  { key: b, label: bl, type: area ? "textarea" : "text" },
+];
+const longform = (products: { value: string; label: string }[]): FieldDef[] => [
+  { key: "summary", label: "The short answer", type: "lines", rows: 6, help: "One point per line." },
+  {
+    key: "compare", label: "Compare side by side (JSON)", type: "json", rows: 18,
+    help: "cols: products by slug with stars, reviews, was (old price) and highlight. In groups[].rows[].cells use \"y\"/\"n\" for yes/no and \"b9.1:91\" for a bar (label:percent). better: \"high\", \"low\" or null.",
+  },
+  {
+    key: "deep", label: "Picks in depth", type: "list", itemLabel: "{{product}}",
+    fields: [
+      { key: "product", label: "Product", type: "select", options: products },
+      { key: "bestFor", label: "Choose this if…", type: "text" },
+      { key: "body", label: "Text", type: "paragraphs", rows: 8 },
+      { key: "specs", label: "Measured", type: "list", itemLabel: "{{k}}: {{v}}", fields: pair("k", "Label", "v", "Value") },
+      { key: "scores", label: "Score breakdown", type: "list", itemLabel: "{{k}}: {{v}}", fields: [{ key: "k", label: "Criterion", type: "text" }, { key: "v", label: "Score (0–10)", type: "number", step: 0.1 }] },
+    ],
+  },
+  {
+    key: "bars", label: "Results by test", type: "list", itemLabel: "{{heading}}",
+    fields: [
+      { key: "heading", label: "Heading", type: "text" },
+      { key: "note", label: "Note", type: "textarea" },
+      { key: "rows", label: "Results", type: "list", itemLabel: "{{name}} · {{value}}", fields: [{ key: "name", label: "Model", type: "text", half: true }, { key: "value", label: "Value shown", type: "text", half: true }, { key: "pct", label: "Bar length (%)", type: "number" }] },
+    ],
+  },
+  { key: "buyIntro", label: "What to look for: intro", type: "textarea" },
+  { key: "buying", label: "What to look for: topics", type: "list", itemLabel: "{{heading}}", fields: [{ key: "heading", label: "Heading", type: "text" }, { key: "paragraphs", label: "Text", type: "paragraphs", rows: 6 }, { key: "tip", label: "Our tip", type: "textarea" }] },
+  { key: "tiers", label: "How much to spend", type: "list", itemLabel: "{{heading}}", fields: [{ key: "heading", label: "Tier", type: "text", half: true }, { key: "pick", label: "Pick line", type: "text", half: true }, { key: "text", label: "Text", type: "textarea" }] },
+  { key: "vsHead", label: "Product types table: header", type: "cells", help: 'Start with " | " to leave the first column empty.' },
+  { key: "vsRows", label: "Product types table: rows", type: "table" },
+  { key: "vsNote", label: "Product types table: note", type: "textarea" },
+  { key: "care", label: "Maintenance", type: "list", itemLabel: "{{heading}}", fields: pair("heading", "Heading", "text", "Text", true) },
+  { key: "skip", label: "Tested but not recommended", type: "list", itemLabel: "{{name}} ({{score}})", fields: [{ key: "name", label: "Model", type: "text", half: true }, { key: "score", label: "Score", type: "text", half: true }, { key: "why", label: "Why not", type: "textarea" }] },
+  { key: "skipNote", label: "Not recommended: note", type: "textarea" },
+  { key: "next", label: "What we're testing now", type: "list", itemLabel: "{{name}}", fields: [{ key: "name", label: "Model", type: "text", half: true }, { key: "status", label: "Status", type: "text", half: true }, { key: "text", label: "Text", type: "textarea" }] },
+  { key: "durable", label: "Durability, warranty and repair", type: "paragraphs", rows: 6 },
+  { key: "situations", label: "Situations", type: "list", itemLabel: "{{heading}}", fields: pair("heading", "Heading", "text", "Text", true) },
+  { key: "specsIntro", label: "Numbers on the box: intro", type: "textarea" },
+  { key: "specsExplained", label: "Numbers on the box", type: "list", itemLabel: "{{term}}", fields: pair("term", "Term", "text", "Explanation", true) },
+  { key: "mistakes", label: "Mistakes", type: "list", itemLabel: "{{heading}}", fields: pair("heading", "Heading", "text", "Text", true) },
+  { key: "verdict", label: "Our final verdict", type: "paragraphs", rows: 6 },
+  { key: "glossary", label: "Glossary", type: "list", itemLabel: "{{term}}", fields: pair("term", "Term", "definition", "Definition", true) },
+];
+
+export default function GuideEditor() {
   const { id } = useParams<{ id: string }>();
-  const r = useRecord<Guide>("guides", id, blank, "/admin/guides");
-  const cats = useList<Category>("/categories");
-  const authors = useList<Author>("/authors");
-  const [tab, setTab] = useState(TABS[0]);
-  const [jsonOk, setJsonOk] = useState(true);
-  const v = r.value;
-  if (!r.loaded) return <Loading error={r.error} />;
+  const ed = useDocEditor<Guide>({
+    resource: "guides",
+    id,
+    blank,
+    editHref: (x) => `/admin/guides/${x}`,
+    listHref: "/admin",
+    prepare: (f) => ({ slug: f.slug || slugify(f.short || f.title) }),
+    validate: (f) => (!f.title.trim() ? "Title is required" : !f.categoryId ? "Choose a category" : !f.authorId ? "Choose an author" : null),
+  });
+  const { form: f, set, patch } = ed;
+  const [cats, setCats] = useState<Category[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [tab, setTab] = useState<Tab | "preview">("content");
+  const [split, setSplit] = useState(true);
+  const [mobile, setMobile] = useState(false);
 
-  const full = v.full;
-  const setFull = <K extends keyof GuideFull>(k: K) => (val: GuideFull[K]) => r.setValue((cur) => ({ ...cur, full: { ...(cur.full ?? emptyFull), [k]: val } }));
-  const productOptions = (v.products ?? []).map((p) => ({ value: p.slug, label: p.name }));
+  useEffect(() => {
+    adminApi<{ items: Category[] }>("/categories").then((d) => setCats(d.items)).catch(() => {});
+    adminApi<{ items: Author[] }>("/authors").then((d) => setAuthors(d.items)).catch(() => {});
+  }, []);
 
-  return (
-    <div key={r.version} className="stack" style={{ gap: 20 }}>
-      <PageHeader title={r.isNew ? "New buying guide" : v.title} subtitle={r.isNew ? "Save the basics first, then add picks." : <span className="mono">/guide/{v.slug}</span>} />
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+  if (!ed.loaded) return <p>{ed.msg?.text ?? "Loading…"}</p>;
 
-      {tab === "Basics" && (
-        <>
-          <Panel title="Basics">
-            <div className="a-grid">
-              <TextField className="span-all" label="Title" value={v.title} onChange={r.set("title")} placeholder="The best stick vacuum of 2026" />
-              <TextField label="Short name" value={v.short} onChange={r.set("short")} placeholder="Stick vacuums" hint="Used in breadcrumbs and labels." />
-              <SlugField label="Slug" value={v.slug} onChange={r.set("slug")} source={v.short || v.title} />
-              <SelectField label="Category" value={v.categoryId} onChange={r.set("categoryId")} options={cats.items.map((c) => ({ value: c.id, label: c.name }))} />
-              <SelectField label="Author" value={v.authorId} onChange={r.set("authorId")} options={authors.items.map((a) => ({ value: a.id, label: a.name }))} />
-              <TextField className="span-all" label="SEO title" value={v.seoTitle} onChange={r.set("seoTitle")} hint="Optional. Defaults to the title." />
-              <TextArea className="span-all" label="Intro" value={v.intro} onChange={r.set("intro")} rows={3} />
-              <Checkbox label="Published (visible on the site)" value={v.published} onChange={r.set("published")} />
-              <NumberField label="Sort order" value={v.sortOrder} onChange={r.set("sortOrder")} />
-            </div>
-          </Panel>
-          <Panel title="Test facts">
-            <div className="a-grid">
-              <NumberField label="Models tested" value={v.modelsTested} onChange={r.set("modelsTested")} />
-              <NumberField label="Test period (weeks)" value={v.testWeeks} onChange={r.set("testWeeks")} />
-              <TextField label="Updated (label)" value={v.updatedLabel} onChange={r.set("updatedLabel")} placeholder="October 3, 2026" />
-              <TextField label="First published (label)" value={v.publishedLabel} onChange={r.set("publishedLabel")} placeholder="February 14, 2026" />
-              <LinesField className="span-2" label="Score criteria" value={v.criteria} onChange={r.set("criteria")} hint="One per line, e.g. Suction, Battery, Ease of use, Noise." />
-            </div>
-          </Panel>
-          <Panel title="Images">
-            <div className="a-grid">
-              <ImageField className="span-all" label="Card image" value={v.coverImage} onChange={r.set("coverImage")} hint="Shown on cards in lists." />
-              <ImageField className="span-all" label="Lead photo" value={v.heroImage} onChange={r.set("heroImage")} hint="Top of the guide and the home page hero." />
-              <ImageField className="span-all" label="Test setup photo" value={v.testImage} onChange={r.set("testImage")} />
-              <TextField className="span-all" label="Placeholder note" value={v.photoNote} onChange={r.set("photoNote")} hint="Shown when an image is missing, e.g. “stick vacuums in the test house”." />
-            </div>
-          </Panel>
-        </>
+  const slug = f.slug || slugify(f.short || f.title);
+  const saveWith = (o: Partial<Guide> = {}) => ed.save(o);
+  const products = (f.products ?? []).map((p) => ({ value: p.slug, label: p.name }));
+  const nullIfEmpty = <T,>(v: T[] | null) => (v && v.length ? v : null);
+  const preview = <EditorPreview url={ed.isNew ? null : `/guide/${f.slug}`} reloadKey={ed.savedAt} mobile={mobile} />;
+
+  const work = (
+    <div className="ad-tabpanel" key={`${ed.version}-${tab}`}>
+      {tab === "content" && <FormFields fields={CONTENT} value={f} onChange={(v) => patch(v as Partial<Guide>)} />}
+      {tab === "table" && (
+        <FormFields
+          fields={TABLE}
+          value={f}
+          onChange={(v) => patch({ ...v, tableHead: nullIfEmpty(v.tableHead), tableRows: nullIfEmpty(v.tableRows) } as Partial<Guide>)}
+        />
       )}
-
-      {tab === "Content" && (
-        <Panel title="Main sections">
-          <TextArea label="Who is this for?" value={v.forWho} onChange={r.set("forWho")} rows={4} />
-          <TextArea label="How we tested" value={v.howTested} onChange={r.set("howTested")} rows={4} />
-          <TextField label="Test photo caption" value={v.howCaption} onChange={r.set("howCaption")} />
-          <TextArea label="How the products were obtained" value={v.bought} onChange={r.set("bought")} rows={2} hint='Added to "Why you can trust us". E.g. “We bought 18 of the 22 machines ourselves…”' />
-        </Panel>
-      )}
-
-      {tab === "Results table" && (
-        <Panel title="Test results compared" subtitle="Leave empty to show the picks with rank, score and price.">
-          <LinesField label="Header row" value={v.tableHead ?? []} onChange={(x) => r.set("tableHead")(x.length ? x : null)} hint="One column title per line, e.g. Model, Pickup, Runtime…" />
-          <TableField label="Rows" value={v.tableRows ?? []} onChange={(x) => r.set("tableRows")(x.length ? x : null)} />
-          <TextField label="Note below the table" value={v.tableNote} onChange={r.set("tableNote")} />
-        </Panel>
-      )}
-
-      {tab === "FAQ & sources" && (
-        <>
-          <Panel title="Frequently asked questions">
-            <ObjectList itemLabel="Question" value={v.faq} onChange={r.set("faq")} fields={[{ key: "q", label: "Question", type: "text", wide: true }, { key: "a", label: "Answer", type: "textarea" }]} />
-          </Panel>
-          <Panel title="Sources and changelog">
-            <LinesField label="Sources" value={v.sources} onChange={r.set("sources")} />
-            <ObjectList label="Changelog" itemLabel="Change" value={v.changes} onChange={r.set("changes")} fields={[{ key: "date", label: "Date", type: "text" }, { key: "text", label: "What changed", type: "text" }]} />
-          </Panel>
-        </>
-      )}
-
-      {tab === "Picks" && (
-        <Panel
-          title="Picks in this guide"
-          subtitle="Products are ordered by rank: 0 = our pick, 1 = budget pick, 2 = upgrade."
-          actions={!r.isNew && <Link href={`/admin/products/new?guideId=${v.id}`} className="a-btn primary sm">+ Add product</Link>}
-        >
-          {r.isNew ? (
-            <p className="small">Save the guide first.</p>
-          ) : (v.products ?? []).length === 0 ? (
-            <p className="small">No products yet.</p>
+      {tab === "faq" && <FormFields fields={FAQ} value={f} onChange={(v) => patch(v as Partial<Guide>)} />}
+      {tab === "picks" && (
+        <div className="ad-panel">
+          <div className="ad-head" style={{ margin: 0 }}>
+            <h2>Picks in this guide</h2>
+            {!ed.isNew && <Link href={`/admin/products/new?guideId=${f.id}`} className="ad-btn ad-btn--sm ad-btn--primary">+ Add product</Link>}
+          </div>
+          <p className="ad-hint">Ordered by rank: 0 = our pick, 1 = budget pick, 2 = upgrade.</p>
+          {ed.isNew ? (
+            <p className="ad-hint">Save the guide first.</p>
           ) : (
-            <table className="a-table">
-              <thead>
-                <tr><th>Rank</th><th>Product</th><th>Label</th><th>Score</th><th /></tr>
-              </thead>
+            <table className="ad-table">
+              <thead><tr><th>Rank</th><th>Product</th><th>Label</th><th>Score</th><th></th></tr></thead>
               <tbody>
-                {(v.products ?? []).map((p) => (
+                {(f.products ?? []).map((p) => (
                   <tr key={p.id}>
                     <td>{p.rank}</td>
-                    <td style={{ fontWeight: 700 }}>{p.name}</td>
-                    <td>{p.label}</td>
+                    <td className="ad-cell-main"><Link href={`/admin/products/${p.id}`}>{p.name}</Link></td>
+                    <td><span className="ad-pill">{p.label}</span></td>
                     <td>{score(p.score)}</td>
-                    <td className="actions"><Link href={`/admin/products/${p.id}`} className="a-btn sm">Edit</Link></td>
+                    <td className="ad-cell-end"><Link href={`/admin/products/${p.id}`} className="ad-btn ad-btn--sm">Edit</Link></td>
                   </tr>
                 ))}
+                {(f.products ?? []).length === 0 && <tr><td colSpan={5}>No products yet.</td></tr>}
               </tbody>
             </table>
           )}
-        </Panel>
+        </div>
       )}
-
-      {tab === "Long-form sections" && (
+      {tab === "longform" && (
         <>
-          <Panel title="Long-form guide">
-            <Checkbox
-              label="Enable long-form sections (summary, comparison, in-depth picks, buying advice, glossary…)"
-              value={!!full}
-              onChange={(on) => r.setValue((cur) => ({ ...cur, full: on ? (cur.full ?? emptyFull) : null }))}
-            />
-          </Panel>
-          {full && (
+          <div className="ad-panel ad-form">
+            <label className="ad-check">
+              <input type="checkbox" checked={!!f.full} onChange={(e) => set("full", e.target.checked ? (f.full ?? emptyFull) : null)} />
+              Long-form guide (short answer, comparison table, picks in depth, buying advice, glossary…)
+            </label>
+            <span className="ad-hint">Long-form guides also show the sticky “our pick” bar and the newsletter popup (see Settings).</span>
+          </div>
+          {f.full && (
             <>
-              <Panel title="Section titles" subtitle="Optional overrides for headings that mention the product type.">
-                <div className="a-grid">
-                  {(
-                    [
-                      ["buying", "What to look for (heading)"],
-                      ["vs", "Product types table (heading)"],
-                      ["vsToc", "Product types (table of contents)"],
-                      ["care", "Maintenance (heading)"],
-                      ["situations", "Situations (heading)"],
-                      ["mistakes", "Mistakes (heading)"],
-                    ] as const
-                  ).map(([k, label]) => (
-                    <TextField key={k} label={label} value={full.titles?.[k] ?? ""} onChange={(x) => setFull("titles")({ ...(full.titles ?? {}), [k]: x || undefined })} />
-                  ))}
-                </div>
-              </Panel>
-              <Panel title="The short answer">
-                <LinesField label="Summary points" value={full.summary} onChange={setFull("summary")} rows={6} />
-              </Panel>
-              <Panel
-                title="Compare side by side"
-                subtitle={
-                  <>
-                    JSON. <code>cols</code>: products by slug with <code>stars</code>, <code>reviews</code>, <code>was</code> (old price) and <code>highlight</code>. In <code>groups[].rows[].cells</code> use
-                    {" "}<code>&quot;y&quot;</code>/<code>&quot;n&quot;</code> for yes/no and <code>&quot;b9.1:91&quot;</code> for a bar (label:percent). <code>better</code>: &quot;high&quot;, &quot;low&quot; or null.
-                  </>
-                }
-              >
-                <JsonField
-                  label="Comparison table"
-                  value={full.compare}
-                  rows={18}
-                  onChange={(x, ok) => {
-                    setJsonOk(ok);
-                    if (ok) setFull("compare")(x as GuideFull["compare"]);
-                  }}
-                />
-              </Panel>
-              <Panel title="Our picks in depth">
-                <ObjectList
-                  itemLabel="Pick"
-                  value={full.deep}
-                  onChange={setFull("deep")}
-                  fields={[
-                    { key: "product", label: "Product", type: "select", options: productOptions },
-                    { key: "bestFor", label: "Choose this if…", type: "text", wide: true },
-                    { key: "body", label: "Text", type: "paragraphs" },
-                    { key: "specs", label: "Measured", type: "list", itemLabel: "Spec", fields: [{ key: "k", label: "Label", type: "text" }, { key: "v", label: "Value", type: "text" }] },
-                    { key: "scores", label: "Score breakdown", type: "list", itemLabel: "Score", fields: [{ key: "k", label: "Criterion", type: "text" }, { key: "v", label: "Score (0–10)", type: "number", step: 0.1 }] },
-                  ]}
-                />
-              </Panel>
-              <Panel title="Results by test">
-                <ObjectList
-                  itemLabel="Test"
-                  value={full.bars}
-                  onChange={setFull("bars")}
-                  fields={[
-                    { key: "heading", label: "Heading", type: "text" },
-                    { key: "note", label: "Note", type: "textarea" },
-                    { key: "rows", label: "Results", type: "list", itemLabel: "Model", fields: [{ key: "name", label: "Model", type: "text" }, { key: "value", label: "Value shown", type: "text" }, { key: "pct", label: "Bar length (%)", type: "number" }] },
-                  ]}
-                />
-              </Panel>
-              <Panel title="What to look for">
-                <TextArea label="Intro" value={full.buyIntro} onChange={setFull("buyIntro")} rows={3} />
-                <ObjectList itemLabel="Topic" value={full.buying} onChange={setFull("buying")} fields={[{ key: "heading", label: "Heading", type: "text", wide: true }, { key: "paragraphs", label: "Text", type: "paragraphs" }, { key: "tip", label: "Our tip", type: "textarea" }]} />
-              </Panel>
-              <Panel title="How much should you spend?">
-                <ObjectList itemLabel="Price tier" value={full.tiers} onChange={setFull("tiers")} fields={[{ key: "heading", label: "Tier", type: "text" }, { key: "pick", label: "Pick line", type: "text" }, { key: "text", label: "Text", type: "textarea" }]} />
-              </Panel>
-              <Panel title="Product types table">
-                <TableField label="Header row" rows={1} value={full.vsHead.length ? [full.vsHead] : []} onChange={(t) => setFull("vsHead")(t[0] ?? [])} hint='One line, cells separated by " | ". Start with " | " to leave the first column empty.' />
-                <TableField label="Rows" value={full.vsRows} onChange={setFull("vsRows")} />
-                <TextArea label="Note" value={full.vsNote} onChange={setFull("vsNote")} rows={3} />
-              </Panel>
-              <Panel title="Maintenance">
-                <ObjectList itemLabel="Tip" value={full.care} onChange={setFull("care")} fields={[{ key: "heading", label: "Heading", type: "text", wide: true }, { key: "text", label: "Text", type: "textarea" }]} />
-              </Panel>
-              <Panel title="Tested but not recommended">
-                <ObjectList itemLabel="Model" value={full.skip} onChange={setFull("skip")} fields={[{ key: "name", label: "Model", type: "text" }, { key: "score", label: "Score", type: "text" }, { key: "why", label: "Why not", type: "textarea" }]} />
-                <TextArea label="Note" value={full.skipNote} onChange={setFull("skipNote")} rows={2} />
-              </Panel>
-              <Panel title="What we're testing now">
-                <ObjectList itemLabel="Model" value={full.next} onChange={setFull("next")} fields={[{ key: "name", label: "Model", type: "text" }, { key: "status", label: "Status", type: "text" }, { key: "text", label: "Text", type: "textarea" }]} />
-              </Panel>
-              <Panel title="Durability, warranty and repair">
-                <ParagraphsField label="Text" value={full.durable} onChange={setFull("durable")} />
-              </Panel>
-              <Panel title="Situations">
-                <ObjectList itemLabel="Situation" value={full.situations} onChange={setFull("situations")} fields={[{ key: "heading", label: "Heading", type: "text", wide: true }, { key: "text", label: "Text", type: "textarea" }]} />
-              </Panel>
-              <Panel title="What the numbers on the box mean">
-                <TextArea label="Intro" value={full.specsIntro} onChange={setFull("specsIntro")} rows={2} />
-                <ObjectList itemLabel="Spec" value={full.specsExplained} onChange={setFull("specsExplained")} fields={[{ key: "term", label: "Term", type: "text", wide: true }, { key: "text", label: "Explanation", type: "textarea" }]} />
-              </Panel>
-              <Panel title="Mistakes">
-                <ObjectList itemLabel="Mistake" value={full.mistakes} onChange={setFull("mistakes")} fields={[{ key: "heading", label: "Heading", type: "text", wide: true }, { key: "text", label: "Text", type: "textarea" }]} />
-              </Panel>
-              <Panel title="Our final verdict">
-                <ParagraphsField label="Text" value={full.verdict} onChange={setFull("verdict")} />
-              </Panel>
-              <Panel title="Glossary">
-                <ObjectList itemLabel="Term" value={full.glossary} onChange={setFull("glossary")} fields={[{ key: "term", label: "Term", type: "text", wide: true }, { key: "definition", label: "Definition", type: "textarea" }]} />
-              </Panel>
+              <div className="ad-panel">
+                <h2>Section titles</h2>
+                <p className="ad-hint">Optional headings that mention the product type.</p>
+                <FormFields fields={TITLES} value={f.full.titles ?? {}} onChange={(t) => set("full", { ...f.full!, titles: t })} />
+              </div>
+              <FormFields fields={longform(products)} value={f.full} onChange={(v) => set("full", v as GuideFull)} />
             </>
           )}
         </>
       )}
-
-      <SaveBar
-        saving={r.saving}
-        error={r.error ?? (jsonOk ? null : "Fix the invalid JSON in the comparison table before saving.")}
-        notice={r.notice}
-        disabled={!jsonOk}
-        onSave={() => r.save()}
-        onDelete={r.isNew ? undefined : () => r.remove(`"${v.title}" and all its products`)}
-        viewHref={r.isNew ? null : `/guide/${v.slug}`}
-      />
+      {tab === "preview" && preview}
     </div>
+  );
+
+  return (
+    <>
+      <div className="ad-head">
+        <h1>{ed.isNew ? "New guide" : f.title || "Untitled"}</h1>
+        <div className="ad-savebar">
+          <SaveStatus msg={ed.msg} dirty={ed.dirty} />
+          {!ed.isNew && <a className="ad-btn" href={`/guide/${f.slug}${f.published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer">Open on site ↗</a>}
+          {!ed.isNew && <button className="ad-btn ad-btn--danger" onClick={() => ed.remove(`Delete "${f.title}"?`, "The guide and all its products (reviews) are deleted. This cannot be undone.")}>Delete</button>}
+          {f.published ? (
+            <>
+              <button className="ad-btn" disabled={ed.saving} onClick={() => saveWith({ published: false })}>Unpublish</button>
+              <button className="ad-btn ad-btn--primary" disabled={ed.saving} onClick={() => saveWith()}>Update</button>
+            </>
+          ) : (
+            <>
+              <button className="ad-btn" disabled={ed.saving} onClick={() => saveWith()}>Save draft</button>
+              <button className="ad-btn ad-btn--primary" disabled={ed.saving} onClick={() => saveWith({ published: true })}>Publish</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="ad-editor">
+        <div className="ad-editor__meta ad-form" key={ed.version}>
+          <label>Title<input value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="The best stick vacuum of 2026" /></label>
+          <div className="ad-2">
+            <label>Short name<input value={f.short} onChange={(e) => set("short", e.target.value)} placeholder="Stick vacuums" /></label>
+            <label>Status
+              <select value={f.published ? "published" : "draft"} onChange={(e) => set("published", e.target.value === "published")}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </label>
+          </div>
+          <label>Slug<input value={f.slug} placeholder="from short name" onChange={(e) => set("slug", e.target.value)} />
+            <span className="ad-hint">/guide/{slug || "…"}</span>
+          </label>
+          <label>Intro<textarea className="sf-text" value={f.intro} onChange={(e) => set("intro", e.target.value)} />
+            <span className="ad-hint">Shown under the title, on cards and as the meta description.</span>
+          </label>
+          <div className="ad-2">
+            <label>Category
+              <select value={f.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
+                <option value="">—</option>
+                {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </label>
+            <label>Author
+              <select value={f.authorId} onChange={(e) => set("authorId", e.target.value)}>
+                <option value="">—</option>
+                {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </label>
+          </div>
+
+          <Fieldset legend="Images">
+            <div className="sf-field"><span className="sf-label">Card image</span><ImageInput value={f.coverImage ?? ""} onChange={(v) => set("coverImage", v || null)} /></div>
+            <div className="sf-field"><span className="sf-label">Lead photo</span><ImageInput value={f.heroImage ?? ""} onChange={(v) => set("heroImage", v || null)} /><span className="ad-hint">Top of the guide and the home page hero.</span></div>
+            <div className="sf-field"><span className="sf-label">Test setup photo</span><ImageInput value={f.testImage ?? ""} onChange={(v) => set("testImage", v || null)} /></div>
+            <label>Placeholder note<input value={f.photoNote} onChange={(e) => set("photoNote", e.target.value)} placeholder="stick vacuums in the test house" /></label>
+          </Fieldset>
+
+          <Fieldset legend="Card details">
+            <div className="ad-2">
+              <label>Models tested<input type="number" value={f.modelsTested} onChange={(e) => set("modelsTested", Number(e.target.value))} /></label>
+              <label>Test weeks<input type="number" value={f.testWeeks} onChange={(e) => set("testWeeks", Number(e.target.value))} /></label>
+            </div>
+            <div className="ad-2">
+              <label>Updated<input value={f.updatedLabel} placeholder="October 3, 2026" onChange={(e) => set("updatedLabel", e.target.value)} /></label>
+              <label>First published<input value={f.publishedLabel} placeholder="February 14, 2026" onChange={(e) => set("publishedLabel", e.target.value)} /></label>
+            </div>
+            <label>Sort order<input type="number" value={f.sortOrder} onChange={(e) => set("sortOrder", Number(e.target.value))} /></label>
+          </Fieldset>
+
+          <Fieldset legend="SEO">
+            <label>SEO title<input value={f.seoTitle ?? ""} placeholder={`${f.title || "Title"} – HouseholdMe`} onChange={(e) => set("seoTitle", e.target.value || null)} /></label>
+            <span className="ad-hint">Structured data (JSON-LD) is generated automatically for long-form guides.</span>
+          </Fieldset>
+        </div>
+
+        <div className="ad-editor__work">
+          <EditorTabs tabs={TABS} tab={tab} onTab={setTab} split={split} onSplit={setSplit} mobile={mobile} onMobile={setMobile} />
+          <div className={`ad-split${split ? " ad-split--side" : ""}`}>
+            {work}
+            {split && tab !== "preview" && preview}
+          </div>
+          <p className="ad-hint">The preview shows the page as last saved (drafts included). Ctrl/⌘+S saves.</p>
+        </div>
+      </div>
+    </>
   );
 }

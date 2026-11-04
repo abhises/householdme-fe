@@ -16,9 +16,9 @@ interface GuideData {
   site: SiteSettings;
 }
 
-export async function generateMetadata({ params }: PageProps<"/guide/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps<"/guide/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const { guide } = await api<GuideData>(`/guides/${slug}`);
+  const { guide } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
   return { title: { absolute: guide.seoTitle || `${guide.title} – HouseholdMe` }, description: guide.intro };
 }
 
@@ -27,9 +27,9 @@ const num = (v: string) => {
   return m ? parseFloat(m[m.length - 1]) : NaN;
 };
 
-export default async function GuidePage({ params }: PageProps<"/guide/[slug]">) {
+export default async function GuidePage({ params, searchParams }: PageProps<"/guide/[slug]">) {
   const { slug } = await params;
-  const { guide: g, reviewer, related, site } = await api<GuideData>(`/guides/${slug}`);
+  const { guide: g, reviewer, related, site } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
   const F: GuideFull | null = g.full;
   const a = g.author;
   const picks = g.products;

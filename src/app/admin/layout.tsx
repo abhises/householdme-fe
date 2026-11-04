@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import "./admin.css";
 
 export const metadata: Metadata = {
-  title: { default: "Admin", template: "%s – HouseholdMe admin" },
+  title: { default: "HouseholdMe admin", template: "%s – HouseholdMe admin" },
   robots: { index: false, follow: false },
 };
 

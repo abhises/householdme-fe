@@ -15,9 +15,9 @@ interface ProductData {
   site: SiteSettings;
 }
 
-export async function generateMetadata({ params }: PageProps<"/review/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps<"/review/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const { product } = await api<ProductData>(`/products/${slug}`);
+  const { product } = await api<ProductData>(`/products/${slug}`, { preview: (await searchParams).preview === "1" });
   return { title: `${product.name} review`, description: product.subtitle || product.verdict };
 }
 
@@ -25,9 +25,9 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
   <h2 className="h2" style={{ fontWeight: 800, paddingTop: 16, borderTop: "3px solid var(--ink)" }}>{children}</h2>
 );
 
-export default async function ReviewPage({ params }: PageProps<"/review/[slug]">) {
+export default async function ReviewPage({ params, searchParams }: PageProps<"/review/[slug]">) {
   const { slug } = await params;
-  const { product: p, reviewer, related, site } = await api<ProductData>(`/products/${slug}`);
+  const { product: p, reviewer, related, site } = await api<ProductData>(`/products/${slug}`, { preview: (await searchParams).preview === "1" });
   const g = p.guide;
   const a = g.author;
   const others = g.products.filter((o) => o.id !== p.id);

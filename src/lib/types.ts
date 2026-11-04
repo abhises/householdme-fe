@@ -168,6 +168,7 @@ export interface Media {
   filename: string;
   mimeType: string;
   size: number;
+  alt: string;
   createdAt: string;
 }
 

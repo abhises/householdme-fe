@@ -1,82 +1,101 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Loading, PageHeader, Panel } from "@/components/admin/ui";
+import { Pagination, usePaging, type Paged } from "@/components/admin/Pagination";
 import { adminApi, errorText } from "@/lib/admin-api";
+import type { Category, Guide } from "@/lib/types";
 
-interface Stats {
-  counts: Record<"guides" | "products" | "categories" | "authors" | "deals" | "subscribers" | "media" | "infoPages", number>;
-  recentGuides: { id: string; title: string; slug: string; updatedAt: string }[];
-  recentSubscribers: { id: string; email: string; createdAt: string }[];
-  storage: string;
-}
+type Row = Guide & { category: { name: string }; author: { name: string }; products: { id: string }[]; updatedAt: string };
 
-const TILES: [keyof Stats["counts"], string, string][] = [
-  ["guides", "Buying guides", "/admin/guides"],
-  ["products", "Products & reviews", "/admin/products"],
-  ["categories", "Categories", "/admin/categories"],
-  ["authors", "Authors", "/admin/authors"],
-  ["deals", "Active deals", "/admin/deals"],
-  ["infoPages", "Info pages", "/admin/info-pages"],
-  ["media", "Media files", "/admin/media"],
-  ["subscribers", "Subscribers", "/admin/subscribers"],
-];
+export default function GuidesPage() {
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [cats, setCats] = useState<Category[]>([]);
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [q, setQ] = useState("");
+  const [error, setError] = useState("");
+  const { page, pageSize, setPage, setPageSize } = usePaging();
+  const [meta, setMeta] = useState<Paged | null>(null);
+  // a new filter starts again at page 1
+  const filter = (fn: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    fn(e.target.value);
+    if (page > 1) setPage(1);
+  };
 
-const when = (d: string) => new Date(d).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-
-export default function Dashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    adminApi<Stats>("/stats").then(setStats).catch((e) => setError(errorText(e)));
+    adminApi<{ items: Category[] }>("/categories").then((d) => setCats(d.items)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const sp = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+      if (category) sp.set("categoryId", category);
+      if (status) sp.set("published", status === "published" ? "true" : "false");
+      if (q) sp.set("q", q);
+      adminApi<{ items: Row[] } & Paged>(`/guides?${sp}`)
+        .then((d) => {
+          setRows(d.items);
+          setMeta(d);
+        })
+        .catch((e) => setError(errorText(e)));
+    }, 200);
+    return () => clearTimeout(t);
+  }, [category, status, q, page, pageSize]);
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        subtitle={stats ? `File storage: ${stats.storage === "s3" ? "Amazon S3" : "local disk"}` : undefined}
-        actions={
-          <>
-            <Link href="/admin/guides/new" className="a-btn primary">+ New buying guide</Link>
-            <Link href="/admin/products/new" className="a-btn">+ New product</Link>
-          </>
-        }
-      />
-      {!stats ? (
-        <Loading error={error} />
+      <div className="ad-head">
+        <h1>Buying guides</h1>
+        <Link href="/admin/guides/new" className="ad-btn ad-btn--primary">+ New guide</Link>
+      </div>
+      <div className="ad-filters">
+        <input placeholder="Search title or slug" value={q} onChange={filter(setQ)} />
+        <select value={category} onChange={filter(setCategory)}>
+          <option value="">All categories</option>
+          {cats.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        <select value={status} onChange={filter(setStatus)}>
+          <option value="">Any status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+      {error && <p className="ad-error">{error}</p>}
+      {!rows ? (
+        <p>Loading…</p>
       ) : (
-        <>
-          <div className="stat-grid">
-            {TILES.map(([k, label, href]) => (
-              <Link key={k} href={href} className="stat">
-                <b>{stats.counts[k]}</b>
-                <span>{label}</span>
-              </Link>
+        <table className="ad-table">
+          <thead>
+            <tr><th></th><th>Title</th><th>Status</th><th>Category</th><th>Author</th><th>Picks</th><th>Updated</th><th></th></tr>
+          </thead>
+          <tbody>
+            {rows.map((g) => (
+              <tr key={g.id}>
+                <td className="ad-cell-hide" style={{ width: 52 }}>{g.coverImage ? <img src={g.coverImage} alt="" className="ad-thumb" /> : <span className="ad-thumb" />}</td>
+                <td className="ad-cell-main">
+                  <Link href={`/admin/guides/${g.id}`}>{g.title}</Link>
+                  {g.full && <span className="ad-pill" style={{ marginLeft: 6 }}>Long-form</span>}
+                  <div className="ad-hint">/guide/{g.slug}</div>
+                </td>
+                <td><span className={`ad-pill ad-pill--${g.published ? "published" : "draft"}`}>{g.published ? "published" : "draft"}</span></td>
+                <td>{g.category?.name ?? "—"}</td>
+                <td>{g.author?.name ?? "—"}</td>
+                <td>{g.products.length}<span className="ad-sm-only"> picks</span></td>
+                <td className="ad-cell-hide">{new Date(g.updatedAt).toLocaleDateString()}</td>
+                <td className="ad-cell-corner">
+                  <a className="ad-btn ad-btn--sm" href={`/guide/${g.slug}${g.published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer">View ↗</a>
+                </td>
+              </tr>
             ))}
-          </div>
-          <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,380px),1fr))" }}>
-            <Panel title="Recently updated guides">
-              {stats.recentGuides.map((g) => (
-                <div key={g.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14 }}>
-                  <Link href={`/admin/guides/${g.id}`} style={{ fontWeight: 700 }}>{g.title}</Link>
-                  <span className="small" style={{ whiteSpace: "nowrap" }}>{when(g.updatedAt)}</span>
-                </div>
-              ))}
-            </Panel>
-            <Panel title="Newest subscribers" actions={<Link href="/admin/subscribers" className="a-btn sm">All</Link>}>
-              {stats.recentSubscribers.length === 0 && <span className="small">No subscribers yet.</span>}
-              {stats.recentSubscribers.map((s) => (
-                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14 }}>
-                  <span>{s.email}</span>
-                  <span className="small" style={{ whiteSpace: "nowrap" }}>{when(s.createdAt)}</span>
-                </div>
-              ))}
-            </Panel>
-          </div>
-        </>
+            {rows.length === 0 && <tr><td colSpan={8}>No guides found.</td></tr>}
+          </tbody>
+        </table>
       )}
+      {meta && <Pagination {...meta} onChange={setPage} onPageSizeChange={setPageSize} />}
     </>
   );
 }
