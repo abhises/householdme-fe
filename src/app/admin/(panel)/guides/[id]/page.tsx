@@ -104,7 +104,7 @@ export default function GuideEditor() {
     id,
     blank,
     editHref: (x) => `/admin/guides/${x}`,
-    listHref: "/admin",
+    listHref: "/admin/guides",
     prepare: (f) => ({ slug: f.slug || slugify(f.short || f.title) }),
     validate: (f) => (!f.title.trim() ? "Title is required" : !f.categoryId ? "Choose a category" : !f.authorId ? "Choose an author" : null),
   });
