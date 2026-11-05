@@ -16,10 +16,8 @@ const MENU: Group[] = [
     label: "Posts",
     icon: "posts",
     items: [
-      { href: "/admin/guides", label: "Buying guides" },
-      { href: "/admin/guides/new", label: "Add new guide" },
-      { href: "/admin/products", label: "Product reviews" },
-      { href: "/admin/deals", label: "Deals" },
+      { href: "/admin/guides", label: "All posts" },
+      { href: "/admin/guides/new", label: "Add new post" },
     ],
   },
   {
@@ -61,7 +59,7 @@ const ICONS = {
 const matches = (path: string, href: string) =>
   href === "/admin" ? path === "/admin" : path === href || path.startsWith(href + "/");
 
-/** The most specific menu link for this path, so "Add new guide" wins over "Buying guides". */
+/** The most specific menu link for this path, so "Add new post" wins over "All posts". */
 function currentHref(path: string) {
   let best = "";
   for (const g of MENU)

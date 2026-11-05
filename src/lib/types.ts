@@ -96,9 +96,21 @@ export interface Product {
   guide?: { id: string; title: string; slug: string; short: string };
 }
 
+export type PostType = "BUYING_GUIDE" | "SINGLE_REVIEW" | "COMPARISON" | "INFO_ARTICLE";
+
+export const POST_TYPES: [PostType, string][] = [
+  ["BUYING_GUIDE", "Buying Guide"],
+  ["SINGLE_REVIEW", "Single Review"],
+  ["COMPARISON", "Comparison"],
+  ["INFO_ARTICLE", "Info Article"],
+];
+
+export const postTypeLabel = (t: PostType | undefined) => POST_TYPES.find(([v]) => v === t)?.[1] ?? "Buying Guide";
+
 export interface Guide {
   id: string;
   slug: string;
+  type: PostType;
   title: string;
   seoTitle: string | null;
   short: string;

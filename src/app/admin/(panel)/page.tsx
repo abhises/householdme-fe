@@ -12,9 +12,7 @@ type Stats = {
 };
 
 const GLANCE: [keyof Stats["counts"], string, string][] = [
-  ["guides", "Buying guides", "/admin/guides"],
-  ["products", "Product reviews", "/admin/products"],
-  ["deals", "Active deals", "/admin/deals"],
+  ["guides", "Posts", "/admin/guides"],
   ["infoPages", "Pages", "/admin/info-pages"],
   ["media", "Media files", "/admin/media"],
   ["categories", "Categories", "/admin/categories"],
@@ -65,15 +63,10 @@ export default function DashboardPage() {
         <section className="ad-panel">
           <h2>Create</h2>
           <div className="ad-quick">
-            <Link className="ad-btn ad-btn--primary" href="/admin/guides/new">+ Buying guide</Link>
-            <Link className="ad-btn" href="/admin/products">+ Product review</Link>
-            <Link className="ad-btn" href="/admin/deals">+ Deal</Link>
+            <Link className="ad-btn ad-btn--primary" href="/admin/guides/new">+ Add new post</Link>
             <Link className="ad-btn" href="/admin/info-pages">+ Page</Link>
             <Link className="ad-btn" href="/admin/media">Upload media</Link>
           </div>
-          <p className="ad-hint">
-            Product reviews belong to a buying guide, so create the guide first.
-          </p>
         </section>
 
         <section className="ad-panel">
@@ -81,7 +74,7 @@ export default function DashboardPage() {
           {!stats ? (
             <p className="ad-hint">Loading…</p>
           ) : stats.recentGuides.length === 0 ? (
-            <p className="ad-hint">Nothing yet. <Link href="/admin/guides/new">Write your first guide</Link>.</p>
+            <p className="ad-hint">Nothing yet. <Link href="/admin/guides/new">Write your first post</Link>.</p>
           ) : (
             <ul className="ad-activity">
               {stats.recentGuides.map((g) => (
@@ -92,7 +85,7 @@ export default function DashboardPage() {
               ))}
             </ul>
           )}
-          <Link href="/admin/guides" className="ad-more">All buying guides →</Link>
+          <Link href="/admin/guides" className="ad-more">All posts →</Link>
         </section>
 
         <section className="ad-panel">

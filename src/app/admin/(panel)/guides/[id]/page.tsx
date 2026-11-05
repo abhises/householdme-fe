@@ -7,10 +7,10 @@ import { EditorPreview, EditorTabs, Fieldset, SaveStatus, useDocEditor } from "@
 import { FormFields, ImageInput, type FieldDef } from "@/components/admin/FormFields";
 import { adminApi, slugify } from "@/lib/admin-api";
 import { score } from "@/lib/format";
-import type { Author, Category, Guide, GuideFull } from "@/lib/types";
+import { POST_TYPES, type Author, type Category, type Guide, type GuideFull, type PostType } from "@/lib/types";
 
 const blank = {
-  slug: "", title: "", seoTitle: null, short: "", intro: "", published: false, categoryId: "", authorId: "",
+  slug: "", type: "BUYING_GUIDE", title: "", seoTitle: null, short: "", intro: "", published: false, categoryId: "", authorId: "",
   modelsTested: 0, testWeeks: 0, updatedLabel: "", publishedLabel: "", photoNote: "", coverImage: null, heroImage: null,
   testImage: null, forWho: "", howTested: "", howCaption: null, bought: null, criteria: [], tableHead: null, tableRows: null,
   tableNote: null, faq: [], sources: [], changes: [], full: null, sortOrder: 0,
@@ -195,7 +195,7 @@ export default function GuideEditor() {
   return (
     <>
       <div className="ad-head">
-        <h1>{ed.isNew ? "New guide" : f.title || "Untitled"}</h1>
+        <h1>{ed.isNew ? "Add new post" : f.title || "Untitled"}</h1>
         <div className="ad-savebar">
           <SaveStatus msg={ed.msg} dirty={ed.dirty} />
           {!ed.isNew && <a className="ad-btn" href={`/guide/${f.slug}${f.published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer">Open on site ↗</a>}
@@ -216,6 +216,11 @@ export default function GuideEditor() {
 
       <div className="ad-editor">
         <div className="ad-editor__meta ad-form" key={ed.version}>
+          <label>Post type
+            <select value={f.type ?? "BUYING_GUIDE"} onChange={(e) => set("type", e.target.value as PostType)}>
+              {POST_TYPES.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+            </select>
+          </label>
           <label>Title<input value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="The best stick vacuum of 2026" /></label>
           <div className="ad-2">
             <label>Short name<input value={f.short} onChange={(e) => set("short", e.target.value)} placeholder="Stick vacuums" /></label>
