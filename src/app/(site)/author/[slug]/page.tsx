@@ -51,7 +51,7 @@ export default async function AuthorPage({ params }: PageProps<"/author/[slug]">
               <a href={`mailto:${email}`} style={{ color: "#fff" }}>{email}</a>
               <Link href="/info/contact" style={{ color: "#fff" }}>Contact the editors</Link>
             </div>
-            <SocialIcons />
+            <SocialIcons linkedin={a.linkedinUrl} youtube={a.youtubeUrl} />
           </div>
         </div>
       </section>

@@ -146,19 +146,24 @@ export function AuthorRow({ slug, name, short, imageUrl, size = 56 }: { slug: st
   );
 }
 
-export function SocialIcons() {
+export function SocialIcons({ linkedin, youtube }: { linkedin?: string | null; youtube?: string | null }) {
+  if (!linkedin && !youtube) return null;
   return (
     <div style={{ display: "flex", gap: 8 }}>
-      <a href="https://www.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn" className="icon-btn">
+      {linkedin && (
+      <a href={linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="icon-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4v11H3zM9.5 9.75h3.8v1.5h.06c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.77 2.65 4.77 6.1v5.45h-4v-4.83c0-1.15-.02-2.63-1.6-2.63-1.6 0-1.85 1.25-1.85 2.55v4.91h-4z" />
         </svg>
       </a>
-      <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube" className="icon-btn">
+      )}
+      {youtube && (
+      <a href={youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="icon-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.75 15.3V8.7L15.5 12z" />
         </svg>
       </a>
+      )}
     </div>
   );
 }

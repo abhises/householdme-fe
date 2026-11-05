@@ -12,10 +12,11 @@ import type { Author } from "@/lib/types";
 type Row = Author & { _count: { guides: number } };
 type Edit = {
   id: string; name: string; slug: string; role: string; short: string; bio: string; trust: string; imageUrl: string;
+  linkedinUrl: string; youtubeUrl: string;
   facts: string; expertise: string; career: string; sortOrder: number; onTeam: boolean; isTester: boolean;
 };
 
-const blank: Edit = { id: "", name: "", slug: "", role: "", short: "", bio: "", trust: "", imageUrl: "", facts: "", expertise: "", career: "", sortOrder: 0, onTeam: true, isTester: true };
+const blank: Edit = { id: "", name: "", slug: "", role: "", short: "", bio: "", trust: "", imageUrl: "", linkedinUrl: "", youtubeUrl: "", facts: "", expertise: "", career: "", sortOrder: 0, onTeam: true, isTester: true };
 const lines = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean);
 const pairs = (s: string) =>
   lines(s).map((l) => {
@@ -25,6 +26,7 @@ const pairs = (s: string) =>
 
 const toEdit = (a: Author): Edit => ({
   id: a.id, name: a.name, slug: a.slug, role: a.role, short: a.short, bio: a.bio, trust: a.trust, imageUrl: a.imageUrl ?? "",
+  linkedinUrl: a.linkedinUrl ?? "", youtubeUrl: a.youtubeUrl ?? "",
   facts: a.facts.map((f) => `${f.value} | ${f.label}`).join("\n"), expertise: a.expertise.join("\n"),
   career: a.career.map((c) => `${c.year} | ${c.text}`).join("\n"), sortOrder: a.sortOrder, onTeam: a.onTeam, isTester: a.isTester,
 });
@@ -39,9 +41,10 @@ export default function AuthorsPage() {
     e.preventDefault();
     if (!edit) return;
     setError("");
-    const { id, facts, expertise, career, imageUrl, ...rest } = edit;
+    const { id, facts, expertise, career, imageUrl, linkedinUrl, youtubeUrl, ...rest } = edit;
     const body = {
-      ...rest, slug: rest.slug || slugify(rest.name), imageUrl: imageUrl || null, sortOrder: Number(rest.sortOrder),
+      ...rest, slug: rest.slug || slugify(rest.name), imageUrl: imageUrl || null,
+      linkedinUrl: linkedinUrl.trim() || null, youtubeUrl: youtubeUrl.trim() || null, sortOrder: Number(rest.sortOrder),
       facts: pairs(facts).map(([value, label]) => ({ value, label })), expertise: lines(expertise),
       career: pairs(career).map(([year, text]) => ({ year, text })),
     };
@@ -75,6 +78,10 @@ export default function AuthorsPage() {
           <div className="ad-2"><label>Name<input required {...f("name")} /></label><label>Slug<input placeholder="from name" {...f("slug")} /></label></div>
           <label>Role<input placeholder="Senior home appliance tester" {...f("role")} /></label>
           <div className="sf-field"><span className="sf-label">Portrait</span><ImageInput value={edit.imageUrl} onChange={(v) => setEdit({ ...edit, imageUrl: v })} /></div>
+          <div className="ad-2">
+            <label>LinkedIn URL<input type="url" placeholder="https://www.linkedin.com/in/…" {...f("linkedinUrl")} /></label>
+            <label>YouTube channel<input type="url" placeholder="https://www.youtube.com/@…" {...f("youtubeUrl")} /></label>
+          </div>
           <label>Short bio (cards)<input {...f("short")} /></label>
           <label>Bio<textarea className="sf-text" {...f("bio")} /></label>
           <label>Trust statement<textarea className="sf-text" {...f("trust")} /><span className="ad-hint">Opens the “Why you can trust us” box on their guides.</span></label>

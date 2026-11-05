@@ -21,6 +21,8 @@ export interface Author extends AuthorCard {
   id: string;
   bio: string;
   trust: string;
+  linkedinUrl: string | null;
+  youtubeUrl: string | null;
   facts: { value: string; label: string }[];
   expertise: string[];
   career: { year: string; text: string }[];

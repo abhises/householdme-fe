@@ -641,7 +641,7 @@ export default async function GuidePage({ params, searchParams }: PageProps<"/gu
               <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: "var(--body)" }}>{a.bio}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <Link href={`/author/${a.slug}`} style={{ fontSize: 14, fontWeight: 700 }}>Profile and all articles</Link>
-                <SocialIcons />
+                <SocialIcons linkedin={a.linkedinUrl} youtube={a.youtubeUrl} />
               </div>
             </div>
           </section>
