@@ -4,6 +4,7 @@ import { ActiveCategory } from "@/components/site/NavLinks";
 import { Faq, PickCard, RichText, SocialIcons, SourcesAndChanges } from "@/components/site/bits";
 import { GuideExtras } from "@/components/site/GuideExtras";
 import { NewsletterForm } from "@/components/site/NewsletterForm";
+import { PostView } from "@/components/site/PostView";
 import { Photo } from "@/components/site/Photo";
 import { api } from "@/lib/api";
 import { score, stars, usd } from "@/lib/format";
@@ -19,7 +20,13 @@ interface GuideData {
 export async function generateMetadata({ params, searchParams }: PageProps<"/guide/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const { guide } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
-  return { title: { absolute: guide.seoTitle || `${guide.title} – HouseholdMe` }, description: guide.intro };
+  const description = guide.seoDescription || guide.intro;
+  return {
+    title: { absolute: guide.seoTitle || `${guide.title} – HouseholdMe` },
+    description,
+    robots: guide.published ? undefined : { index: false },
+    openGraph: { title: guide.title, description, type: "article", images: guide.coverImage ? [guide.coverImage] : undefined },
+  };
 }
 
 const num = (v: string) => {
@@ -30,6 +37,15 @@ const num = (v: string) => {
 export default async function GuidePage({ params, searchParams }: PageProps<"/guide/[slug]">) {
   const { slug } = await params;
   const { guide: g, reviewer, related, site } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
+  // Posts built in the admin with sections or hand-written HTML render as authored
+  if (g.sections || g.html.trim()) {
+    return (
+      <>
+        <ActiveCategory slug={g.category.slug} />
+        <PostView guide={g} site={site} />
+      </>
+    );
+  }
   const F: GuideFull | null = g.full;
   const a = g.author;
   const picks = g.products;

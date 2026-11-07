@@ -345,3 +345,40 @@ button.sf-ref__row:hover { background: var(--yellow-soft); }
 .ad-more { font-size: 13px; font-weight: 700; text-decoration: none; align-self: flex-start; }
 @media (max-width: 900px) { .ad-dash { grid-template-columns: 1fr; } }
 @media (max-width: 500px) { .ad-activity li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* ---------- section-based post editor (ported from the BrasQ admin) ---------- */
+.se { display: grid; grid-template-columns: minmax(0, 210px) minmax(0, 1fr); background: #fff; border: 1px solid var(--line); min-height: 520px; }
+.se-outline { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; background: #fafaf8; }
+.se-outline__head { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.se-outline__head select { border: 1px solid #c9c9c2; padding: 4px 6px; font: 12px var(--sans); text-transform: none; letter-spacing: 0; }
+.se-item { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); background: #fff; }
+.se-item.is-selected { background: var(--yellow-soft); box-shadow: inset 4px 0 0 var(--orange); }
+.se-item.is-hidden .se-item__main { opacity: 0.5; }
+.se-item__main { flex: 1; min-width: 0; border: 0; background: none; text-align: left; padding: 8px 10px; cursor: pointer; font: 13px var(--sans); display: flex; flex-direction: column; gap: 1px; }
+.se-item__main b { font-weight: 800; }
+.se-item__main small { color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.se-item__flag { color: var(--red) !important; font-weight: 700; }
+.se-item__ops { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 4px; }
+.se-item__ops button { border: 1px solid var(--line); background: #fff; width: 22px; height: 18px; font-size: 10px; cursor: pointer; padding: 0; line-height: 1; }
+.se-item__ops button:hover:not(:disabled) { background: var(--yellow); border-color: var(--ink); }
+.se-item__ops button:disabled { opacity: 0.3; cursor: default; }
+.se-add { margin: 10px; border: 2px dashed var(--ink); background: transparent; padding: 9px; font: 800 13px var(--sans); cursor: pointer; }
+.se-add:hover { background: var(--yellow); border-style: solid; }
+.se-form { padding: 14px; min-width: 0; overflow: auto; max-height: calc(100vh - 180px); }
+.se-form__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.se-form__head strong { font-size: 16px; font-weight: 900; }
+.se-form__ops { display: flex; gap: 4px; flex-wrap: wrap; }
+.se-pick { margin-top: 14px; }
+.se-pick__group { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.se-pick__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; }
+.se-pick__grid button { text-align: left; border: 1px solid var(--line); background: #fff; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: 13px var(--sans); }
+.se-pick__grid button:hover { border-color: var(--ink); background: var(--yellow-soft); }
+.se-pick__grid strong { font-size: 14px; }
+.se-pick__grid span { color: var(--text-2); line-height: 1.4; }
+.ad-code-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.se-htmlbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 760px) { .se { grid-template-columns: 1fr; } .se-outline { border-right: 0; border-bottom: 1px solid var(--line); } .se-form { max-height: none; } }
+.se-input { border: 1px solid #c9c9c2; padding: 4px 6px; font: 12px var(--sans); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.se-check { display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.se-adv { border: 1px solid var(--line); padding: 6px 10px; margin-bottom: 12px; font-size: 13px; }
+.se-adv summary { cursor: pointer; font-weight: 700; }

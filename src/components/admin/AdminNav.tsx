@@ -17,7 +17,7 @@ const MENU: Group[] = [
     icon: "posts",
     items: [
       { href: "/admin/guides", label: "All posts" },
-      { href: "/admin/guides/new", label: "Add new post" },
+      { href: "/admin/guides/new", label: "Add new" },
     ],
   },
   {
