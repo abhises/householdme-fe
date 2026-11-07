@@ -141,6 +141,14 @@ export interface Guide {
   changes: Change[];
   full: GuideFull | null;
   sortOrder: number;
+  /* Section / HTML posts (BrasQ-style editor). Empty html + null sections = the classic guide template. */
+  seoDescription: string | null;
+  jsonLd: string | null;
+  html: string;
+  css: string;
+  sections: SectionsDoc | null;
+  stickyBar: StickyBar | null;
+  newsletterPopup: boolean;
   category?: CategoryRef & { id?: string };
   author?: Author;
   products?: Product[];
@@ -224,3 +232,18 @@ export interface AllSettings {
 }
 
 export interface Paged<T> { items: T[]; total: number; page?: number; pageSize?: number }
+
+/* ---------- Section-based posts (ported from the BrasQ post editor) ---------- */
+export interface StickyBar { name: string; score?: string; price?: string; shop?: string; url: string; image?: string }
+export type SectionFieldType = "text" | "textarea" | "richtext" | "number" | "image" | "link" | "select" | "toggle" | "list" | "post" | "product" | "cells" | "code";
+export interface SectionFieldDef {
+  key: string; label: string; type: SectionFieldType; required?: boolean; help?: string; placeholder?: string; default?: unknown;
+  options?: string[]; fields?: SectionFieldDef[]; fill?: Record<string, string>; itemLabel?: string;
+}
+export interface SectionType {
+  id: string; key: string; name: string; group: string; description: string; fields: SectionFieldDef[]; template: string; css: string;
+  sample: Record<string, unknown>; tocLabel: string; placement: "top" | "body" | "bottom"; scope: "any" | "post" | "home";
+  builtIn: boolean; version: number; updatedAt: string;
+}
+export interface SectionItem { id: string; type: string; data: Record<string, unknown>; hidden?: boolean; placement?: "top" | "body" | "bottom"; tocLabel?: string }
+export interface SectionsDoc { layout: "toc" | "wide" | "raw"; className?: string; tocTitle?: string; backToTop?: boolean; items: SectionItem[] }
