@@ -106,7 +106,7 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${p.priceHistory.length},minmax(0,1fr))`, gap: 6, alignItems: "end", height: 72 }}>
             {p.priceHistory.map((h, i) => (
               <div key={i} className="stack" style={{ justifyContent: "flex-end", gap: 4, height: "100%" }}>
-                <span className="mono" style={{ fontSize: 10, textAlign: "center", color: "var(--muted)" }}>{usd(h.price)}</span>
+                <span className="mono" style={{ fontSize: 11, textAlign: "center", color: "var(--muted)" }}>{usd(h.price)}</span>
                 <span style={{ display: "block", background: i === p.priceHistory.length - 1 ? "var(--blue)" : "var(--ink)", height: `${Math.round((h.price / histMax) * 70)}%` }} />
               </div>
             ))}

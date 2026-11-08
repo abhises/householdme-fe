@@ -373,7 +373,7 @@
 .bq-pricehist__head span strong { color: var(--ink); }
 .bq-pricehist__bars { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; align-items: end; height: 84px; }
 .bq-pricehist__bars > div { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 100%; }
-.bq-pricehist__bars > div > span:first-child { font-family: var(--mono); font-size: 10px; text-align: center; color: var(--muted); }
+.bq-pricehist__bars > div > span:first-child { font-family: var(--mono); font-size: 11px; text-align: center; color: var(--muted); }
 .bq-pricehist__bars > div > span:last-child { display: block; background: var(--ink); }
 .bq-pricehist__bars > div:last-child > span:last-child { background: var(--orange); }
 .bq-pricehist__months { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; font-size: 11px; color: var(--muted); text-align: center; }

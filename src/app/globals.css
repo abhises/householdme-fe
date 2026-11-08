@@ -105,7 +105,7 @@ button, input, select, textarea { font-family: var(--font); }
 .site-header .top { padding-top: 16px; padding-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 .logo { font-weight: 900; font-size: 24px; letter-spacing: 0.01em; line-height: 1; color: #fff; text-transform: uppercase; text-decoration: none; }
 .logo:hover { color: #fff; }
-.header-actions { display: flex; align-items: center; gap: 10px; flex: 1 1 300px; justify-content: flex-end; max-width: 520px; }
+.header-actions { display: flex; align-items: center; gap: 10px; flex: 1 1 300px; min-width: 0; justify-content: flex-end; max-width: 520px; }
 .search-link { flex: 1 1 auto; min-width: 0; border: 1px solid var(--dark-line); background: var(--dark-2); padding: 10px 14px; font-size: 14px; color: var(--on-dark-3); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .search-link:hover { color: #fff; }
 .nl-link { font-size: 14px; font-weight: 700; text-decoration: none; background: var(--blue); color: #fff; padding: 12px 16px; white-space: nowrap; }
@@ -124,6 +124,23 @@ button, input, select, textarea { font-family: var(--font); }
 .site-footer .col a { color: var(--on-dark-2); text-decoration: none; }
 .site-footer .col a:hover { color: #fff; }
 .site-footer .bottom { border-top: 1px solid var(--dark-line); padding-top: 18px; font-size: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+@media (max-width: 759px) {
+  .site-header .top { padding-top: 14px; padding-bottom: 14px; gap: 12px; }
+  .header-actions { flex-basis: 100%; max-width: none; }
+  .nl-link { padding: 10px 14px; }
+  .search-link { padding: 10px 12px; }
+  /* bigger tap targets for stacked footer links */
+  .site-footer .col { gap: 2px; }
+  .site-footer .col strong { margin-bottom: 6px; }
+  .site-footer .col a { padding: 6px 0; }
+  .crumbs a { padding: 4px 0; }
+}
+
+/* hint that the category nav scrolls sideways where it doesn't fit */
+@media (max-width: 1199px) {
+  .site-nav .inner { padding-right: 36px; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+}
 
 /* ---------- common blocks ---------- */
 .dark-band { background: var(--ink); color: #fff; }
@@ -166,6 +183,8 @@ button, input, select, textarea { font-family: var(--font); }
 .with-aside { display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start; }
 .guide-aside { position: sticky; top: 20px; flex: 0 1 220px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; max-width: 240px; }
 .mobile-only { display: none; }
+.deep-side { flex: 1 1 200px; max-width: 260px; width: 100%; gap: 12px; }
+@media (max-width: 759px) { .deep-side { max-width: none; } .deep-side .ph { max-height: 320px; } }
 @media (max-width: 759px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block; }

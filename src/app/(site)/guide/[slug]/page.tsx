@@ -357,7 +357,7 @@ export default async function GuidePage({ params, searchParams }: PageProps<"/gu
                           <div className="stack" style={{ flex: "2 1 340px", minWidth: 0, gap: 14 }}>
                             {d.body.map((t, i) => <p key={i} className="prose"><RichText text={t} links={links} /></p>)}
                           </div>
-                          <div className="stack" style={{ flex: "1 1 200px", maxWidth: 260, width: "100%", gap: 12 }}>
+                          <div className="stack deep-side">
                             <Photo src={p.images[1] ?? p.images[0]} alt={`${p.name} in use`} style={{ aspectRatio: "1" }} />
                             {d.specs.length > 0 && (
                               <div className="box">
