@@ -76,7 +76,7 @@ export function RichText({ text, links }: { text: string; links: { name: string;
 
 export function GuideCardItem({ g }: { g: GuideCard }) {
   return (
-    <Link href={`/guide/${g.slug}`} className="nolink stack" style={{ gap: 12 }}>
+    <Link href={`/${g.slug}`} className="nolink stack" style={{ gap: 12 }}>
       <Photo src={g.coverImage} alt={g.title} label={<>own test photo: {g.photoNote}</>} style={{ aspectRatio: "3/2" }}>
         <span className="ph-badge">{g.modelsTested} tested</span>
       </Photo>

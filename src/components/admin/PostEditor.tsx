@@ -320,7 +320,7 @@ export function PostEditor({ id }: { id?: string }) {
 
   const extensions = useMemo(() => ({ html: [htmlLang()], css: [cssLang()], jsonld: [jsonLang()] }), []);
   const slug = form.slug || slugify(form.short || form.title);
-  const liveUrl = id && form.slug ? `/guide/${form.slug}${form.published ? "" : "?preview=1"}` : null;
+  const liveUrl = id && form.slug ? `/${form.slug}${form.published ? "" : "?preview=1"}` : null;
 
   if (!loaded) return <p>{msg?.text ?? "Loading…"}</p>;
 
@@ -336,7 +336,7 @@ export function PostEditor({ id }: { id?: string }) {
     </div>
   );
   const preview = classic ? (
-    <EditorPreview url={id ? `/guide/${form.slug}` : null} reloadKey={savedAt} mobile={mobile} />
+    <EditorPreview url={id ? `/${form.slug}` : null} reloadKey={savedAt} mobile={mobile} />
   ) : (
     <div className={`ad-preview${mobile ? " ad-preview--mobile" : ""}`}>
       <iframe ref={frame} title="Preview" srcDoc={doc} sandbox="allow-same-origin allow-popups" onLoad={() => { frame.current?.contentWindow?.scrollTo(0, previewScroll.current); markSelected(false); }} />
@@ -447,7 +447,7 @@ export function PostEditor({ id }: { id?: string }) {
             </label>
           </div>
           <label>Slug<input value={form.slug} placeholder="from title" onChange={(e) => set("slug", e.target.value)} />
-            <span className="ad-hint">/guide/{slug || "…"}</span></label>
+            <span className="ad-hint">/{slug || "…"}</span></label>
           <label>Excerpt<textarea style={{ fontFamily: "var(--sans)", fontSize: 13, minHeight: 70 }} value={form.intro} onChange={(e) => set("intro", e.target.value)} />
             <span className="ad-hint">Used on cards, in search and as fallback meta description.</span></label>
           <div className="ad-2">

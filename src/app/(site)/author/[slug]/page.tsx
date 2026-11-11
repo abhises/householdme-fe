@@ -24,9 +24,9 @@ export default async function AuthorPage({ params }: PageProps<"/author/[slug]">
   const first = firstName(a.name);
   const email = `${a.slug}@householdme.com`;
   const articles = isReviewer
-    ? guides.map((g) => ({ key: g.slug, img: g.coverImage, type: "Fact-checked", title: g.title, date: `Updated ${g.updatedLabel}`, href: `/guide/${g.slug}` }))
+    ? guides.map((g) => ({ key: g.slug, img: g.coverImage, type: "Fact-checked", title: g.title, date: `Updated ${g.updatedLabel}`, href: `/${g.slug}` }))
     : guides.flatMap((g) => [
-        { key: g.slug, img: g.coverImage, type: "Buying guide", title: g.title, date: `Updated ${g.updatedLabel}`, href: `/guide/${g.slug}` },
+        { key: g.slug, img: g.coverImage, type: "Buying guide", title: g.title, date: `Updated ${g.updatedLabel}`, href: `/${g.slug}` },
         ...(g.products[0]
           ? [{ key: g.products[0].slug, img: g.products[0].images[0] ?? null, type: "Review", title: `${g.products[0].name} review`, date: g.updatedLabel, href: `/review/${g.products[0].slug}` }]
           : []),

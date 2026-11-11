@@ -129,7 +129,7 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
             <span>/</span>
             <Link href={`/category/${g.category.slug}`} style={{ color: "var(--on-dark-3)" }}>{g.category.name}</Link>
             <span>/</span>
-            <Link href={`/guide/${g.slug}`} style={{ color: "var(--on-dark-3)" }}>{g.short}</Link>
+            <Link href={`/${g.slug}`} style={{ color: "var(--on-dark-3)" }}>{g.short}</Link>
           </nav>
           <span style={{ color: "var(--blue)", fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 10 }}>
             Review · {p.label} · {g.short}
@@ -330,8 +330,8 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
 
             <section className="stack" style={{ gap: 14 }}>
               <h2 style={{ fontSize: 22, margin: 0, fontWeight: 900 }}>Related buying guides</h2>
-              <Link href={`/guide/${g.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{g.title}</Link>
-              {related.map((r) => <Link key={r.slug} href={`/guide/${r.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{r.title}</Link>)}
+              <Link href={`/${g.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{g.title}</Link>
+              {related.map((r) => <Link key={r.slug} href={`/${r.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{r.title}</Link>)}
             </section>
           </div>
 

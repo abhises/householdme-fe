@@ -121,7 +121,7 @@ function ImageInput({ value, onChange }: { value: string; onChange: (v: string) 
 }
 
 type RefRow = { id: string; title: string; meta: string; image?: string | null };
-const toPost = (p: Guide): RefRow => ({ id: p.id, title: p.title, meta: `${postTypeLabel(p.type)} · /guide/${p.slug}`, image: p.coverImage ?? p.heroImage });
+const toPost = (p: Guide): RefRow => ({ id: p.id, title: p.title, meta: `${postTypeLabel(p.type)} · /${p.slug}`, image: p.coverImage ?? p.heroImage });
 const toProduct = (p: Product): RefRow => ({ id: p.id, title: p.name, meta: [`score ${Number(p.score).toFixed(1)}`, p.price ? `$${p.price}` : '', `/review/${p.slug}`].filter(Boolean).join(' · '), image: p.images?.[0] ?? null });
 
 /** Search-and-pick for posts or products. Stores the id; also accepts a slug typed by automation. */

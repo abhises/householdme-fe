@@ -37,7 +37,7 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
         <h2 className="h2 h2-rule" style={{ fontSize: 26 }}>Buying guides</h2>
         {cat.guides.length === 0 && <p className="lead">No buying guides in this category yet.</p>}
         {cat.guides.map((g) => (
-          <Link key={g.slug} href={`/guide/${g.slug}`} className="nolink" style={{ display: "flex", flexWrap: "wrap", gap: 24, borderBottom: "1px solid var(--line)", paddingBottom: 24 }}>
+          <Link key={g.slug} href={`/${g.slug}`} className="nolink" style={{ display: "flex", flexWrap: "wrap", gap: 24, borderBottom: "1px solid var(--line)", paddingBottom: 24 }}>
             <Photo src={g.coverImage} alt={g.title} label={<>own test photo: {g.photoNote}</>} style={{ flex: "1 1 260px", maxWidth: 380, aspectRatio: "3/2" }} />
             <div className="stack" style={{ flex: "2 1 320px", gap: 10 }}>
               <span className="eyebrow eyebrow-blue">

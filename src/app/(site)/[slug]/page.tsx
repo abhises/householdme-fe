@@ -17,7 +17,7 @@ interface GuideData {
   site: SiteSettings;
 }
 
-export async function generateMetadata({ params, searchParams }: PageProps<"/guide/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps<"/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const { guide } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
   const description = guide.seoDescription || guide.intro;
@@ -34,7 +34,7 @@ const num = (v: string) => {
   return m ? parseFloat(m[m.length - 1]) : NaN;
 };
 
-export default async function GuidePage({ params, searchParams }: PageProps<"/guide/[slug]">) {
+export default async function GuidePage({ params, searchParams }: PageProps<"/[slug]">) {
   const { slug } = await params;
   const { guide: g, reviewer, related, site } = await api<GuideData>(`/guides/${slug}`, { preview: (await searchParams).preview === "1" });
   // Posts built in the admin with sections or hand-written HTML render as authored
@@ -102,7 +102,7 @@ export default async function GuidePage({ params, searchParams }: PageProps<"/gu
             itemListElement: [
               ["Home", `${siteUrl}/`],
               [g.category.name, `${siteUrl}/category/${g.category.slug}`],
-              [g.short, `${siteUrl}/guide/${g.slug}`],
+              [g.short, `${siteUrl}/${g.slug}`],
             ].map((x, i) => ({ "@type": "ListItem", position: i + 1, name: x[0], item: x[1] })),
           },
           { "@type": "Article", headline: g.title, description: g.intro, author: { "@type": "Person", name: a.name, url: `${siteUrl}/author/${a.slug}` }, publisher: { "@type": "Organization", name: "HouseholdMe" } },
@@ -633,7 +633,7 @@ export default async function GuidePage({ params, searchParams }: PageProps<"/gu
               <h2 style={{ fontSize: 24, margin: 0, fontWeight: 900, letterSpacing: "-0.02em" }}>Read next</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,200px),1fr))", gap: 16 }}>
                 {related.map((x) => (
-                  <Link key={x.slug} href={`/guide/${x.slug}`} className="nolink stack" style={{ gap: 8 }}>
+                  <Link key={x.slug} href={`/${x.slug}`} className="nolink stack" style={{ gap: 8 }}>
                     <Photo src={x.coverImage} alt={x.title} style={{ aspectRatio: "3/2" }} />
                     <span className="eyebrow eyebrow-blue">{x.category.name}</span>
                     <strong style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.25 }}>{x.title}</strong>

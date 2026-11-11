@@ -26,7 +26,7 @@ export default async function HomePage() {
               Buying guide · {hero.category.name}
             </Link>
             <h1 className="h1" style={{ fontSize: "clamp(36px,5.6vw,68px)" }}>
-              <Link href={`/guide/${hero.slug}`} className="nolink">
+              <Link href={`/${hero.slug}`} className="nolink">
                 {hero.title}
               </Link>
             </h1>
@@ -43,7 +43,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Link href={`/guide/${hero.slug}`} className="btn btn-dark">
+              <Link href={`/${hero.slug}`} className="btn btn-dark">
                 Read the buying guide
               </Link>
               {heroSecondary && (
@@ -53,7 +53,7 @@ export default async function HomePage() {
               )}
             </div>
           </div>
-          <Link href={`/guide/${hero.slug}`} className="nolink" style={{ display: "block" }}>
+          <Link href={`/${hero.slug}`} className="nolink" style={{ display: "block" }}>
             <Photo src={hero.heroImage ?? hero.coverImage} alt={hero.title} label="Drop a test photo here" style={{ aspectRatio: "4/3" }}>
               <div style={{ position: "absolute", right: 0, top: 0, background: "var(--sky)", padding: "12px 16px", display: "flex", flexDirection: "column", color: "var(--ink)", fontFamily: "var(--font)", zIndex: 1 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Tested</span>

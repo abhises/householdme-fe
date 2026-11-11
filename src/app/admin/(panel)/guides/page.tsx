@@ -60,13 +60,13 @@ export default function PostsPage() {
               const status = p.published ? "published" : "draft";
               return (
                 <tr key={p.id}>
-                  <td className="ad-cell-main"><Link href={`/admin/guides/${p.id}`}>{p.title}</Link>{p.slug === heroSlug && <span className="ad-pill" style={{ marginLeft: 6 }}>Home hero</span>}<div className="ad-hint">/guide/{p.slug}</div></td>
+                  <td className="ad-cell-main"><Link href={`/admin/guides/${p.id}`}>{p.title}</Link>{p.slug === heroSlug && <span className="ad-pill" style={{ marginLeft: 6 }}>Home hero</span>}<div className="ad-hint">/{p.slug}</div></td>
                   <td>{postTypeLabel(p.type)}</td>
                   <td><span className={`ad-pill ad-pill--${status}`}>{status}</span></td>
                   <td>{p.category?.name ?? "—"}</td>
                   <td>{p.author?.name ?? "—"}</td>
                   <td className="ad-cell-hide">{new Date(p.updatedAt).toLocaleDateString()}</td>
-                  <td className="ad-cell-corner"><a className="ad-btn ad-btn--sm" href={`/guide/${p.slug}${p.published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer">View ↗</a></td>
+                  <td className="ad-cell-corner"><a className="ad-btn ad-btn--sm" href={`/${p.slug}${p.published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer">View ↗</a></td>
                 </tr>
               );
             })}
