@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { adminApi, errorText } from "@/lib/admin-api";
 
 type Stats = {
-  counts: Record<"guides" | "products" | "categories" | "authors" | "deals" | "subscribers" | "media" | "infoPages", number>;
+  counts: Record<"guides" | "products" | "categories" | "authors" | "deals" | "subscribers" | "media" | "infoPages" | "awards", number>;
   recentGuides: { id: string; title: string; slug: string; updatedAt: string }[];
   recentSubscribers: { id: string; email: string; source: string | null; createdAt: string }[];
   storage: "local" | "s3";
@@ -14,6 +14,7 @@ type Stats = {
 const GLANCE: [keyof Stats["counts"], string, string][] = [
   ["guides", "Posts", "/admin/guides"],
   ["infoPages", "Pages", "/admin/info-pages"],
+  ["awards", "Awards", "/admin/awards"],
   ["media", "Media files", "/admin/media"],
   ["categories", "Categories", "/admin/categories"],
   ["authors", "Authors", "/admin/authors"],

@@ -247,3 +247,42 @@ export interface SectionType {
 }
 export interface SectionItem { id: string; type: string; data: Record<string, unknown>; hidden?: boolean; placement?: "top" | "body" | "bottom"; tocLabel?: string }
 export interface SectionsDoc { layout: "toc" | "wide" | "raw"; className?: string; tocTitle?: string; backToTop?: boolean; items: SectionItem[] }
+
+export interface CleaningService {
+  id: string;
+  slug: string;
+  name: string;
+  city: string;
+  state: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string | null;
+  logoUrl: string | null;
+  googleRating: number | null;
+  googleReviews: number | null;
+  yelpRating: number | null;
+  yelpReviews: number | null;
+  services: string[];
+  licensed: boolean;
+  insured: boolean;
+  backgroundChecked: boolean;
+  notes: string;
+  awards: { id: string; year: number; title: string; city: string; state: string }[];
+}
+
+export interface Award {
+  id: string;
+  serviceId: string;
+  year: number;
+  city: string;
+  state: string;
+  title: string;
+  rank: number;
+  score: number | null;
+  whyItWon: string;
+  published: boolean;
+  notifiedAt: string | null;
+  createdAt: string;
+  service: Pick<CleaningService, "id" | "name" | "slug" | "city" | "state" | "email" | "logoUrl">;
+}

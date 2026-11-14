@@ -29,6 +29,15 @@ const MENU: Group[] = [
       { href: "/admin/front-page", label: "Front page" },
     ],
   },
+  {
+    href: "/admin/awards",
+    label: "Awards",
+    icon: "awards",
+    items: [
+      { href: "/admin/awards", label: "All awards" },
+      { href: "/admin/cleaning-services", label: "Cleaning services" },
+    ],
+  },
   { href: "/admin/media", label: "Media", icon: "media" },
   { href: "/admin/categories", label: "Categories", icon: "categories" },
   { href: "/admin/authors", label: "Authors", icon: "authors" },
@@ -49,6 +58,7 @@ const ICONS = {
   posts: "M4 4h16v4H4zm0 6h10v2H4zm0 4h16v2H4zm0 4h10v2H4z",
   pages: "M6 2h9l5 5v15H6zM15 2v5h5M9 12h8M9 16h8",
   media: "M3 5h18v14H3zm2 12h14l-4.5-6-3.5 4.5-2.5-3z",
+  awards: "M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4zm0 5H5v1a3 3 0 0 0 2 2.8zm10 0v3.8A3 3 0 0 0 19 9V8z",
   categories: "M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z",
   authors: "M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9m-8 9c0-4.4 3.6-7 8-7s8 2.6 8 7z",
   subscribers: "M3 5h18v14H3zm0 1 9 7 9-7",
