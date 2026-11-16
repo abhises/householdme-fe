@@ -238,3 +238,17 @@ button, input, select, textarea { font-family: var(--font); }
 .contact-done { background: var(--sky); padding: 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .contact-done strong { font-size: 19px; }
 .contact-done p { margin: 0; color: var(--body); overflow-wrap: anywhere; }
+
+/* Public pagination */
+.pager { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pager a, .pager span { min-width: 42px; padding: 9px 12px; border: 2px solid var(--ink); text-align: center; font-weight: 800; font-size: 15px; text-decoration: none; color: var(--ink); background: #fff; }
+.pager a:hover { background: var(--sky); color: var(--ink); }
+.pager a[aria-current="page"] { background: var(--ink); color: #fff; }
+.pager span[aria-disabled] { opacity: 0.35; }
+.pager .pager-gap { border-color: transparent; min-width: 0; padding: 9px 4px; }
+
+/* Shown instantly while the next page loads */
+.page-loading { min-height: 60vh; padding-top: 28px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 18px; }
+.page-loading div { background: var(--soft); border-radius: 2px; animation: pl-pulse 1.1s ease-in-out infinite alternate; }
+@keyframes pl-pulse { from { opacity: 1; } to { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .page-loading div { animation: none; } }

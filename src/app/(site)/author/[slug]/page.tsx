@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SocialIcons } from "@/components/site/bits";
 import { Photo } from "@/components/site/Photo";
+import { pageParam, SITE_PAGE_SIZE, SitePagination } from "@/components/site/SitePagination";
 import { api } from "@/lib/api";
 import { firstName } from "@/lib/format";
 import type { Author, Guide } from "@/lib/types";
 
 interface AuthorData {
   author: Author;
-  guides: (Guide & { products: { slug: string; name: string; images: string[] }[] })[];
+  guides: (Pick<Guide, "slug" | "title" | "coverImage" | "updatedLabel"> & { products: { slug: string; name: string; images: string[] }[] })[];
   isReviewer: boolean;
 }
 
@@ -18,8 +19,9 @@ export async function generateMetadata({ params }: PageProps<"/author/[slug]">):
   return { title: author.name, description: author.short };
 }
 
-export default async function AuthorPage({ params }: PageProps<"/author/[slug]">) {
+export default async function AuthorPage({ params, searchParams }: PageProps<"/author/[slug]">) {
   const { slug } = await params;
+  const page = pageParam(await searchParams);
   const { author: a, guides, isReviewer } = await api<AuthorData>(`/authors/${slug}`);
   const first = firstName(a.name);
   const email = `${a.slug}@householdme.com`;
@@ -99,7 +101,7 @@ export default async function AuthorPage({ params }: PageProps<"/author/[slug]">
         <div className="stack" style={{ flex: "2 1 460px", minWidth: 0, gap: 20 }}>
           <h2 className="h2 h2-rule">{isReviewer ? `Fact-checked by ${first}` : `Articles by ${first}`}</h2>
           {articles.length === 0 && <p className="lead">No articles yet.</p>}
-          {articles.map((x) => (
+          {articles.slice((page - 1) * SITE_PAGE_SIZE, page * SITE_PAGE_SIZE).map((x) => (
             <Link key={x.type + x.key} href={x.href} className="nolink" style={{ display: "grid", gridTemplateColumns: "110px 1fr", gap: 16, alignItems: "start", borderBottom: "1px solid var(--line)", paddingBottom: 18 }}>
               <Photo src={x.img} alt="" style={{ aspectRatio: "3/2", padding: 0 }} />
               <div className="stack" style={{ gap: 6 }}>
@@ -109,6 +111,7 @@ export default async function AuthorPage({ params }: PageProps<"/author/[slug]">
               </div>
             </Link>
           ))}
+          <SitePagination page={page} total={articles.length} path={`/author/${a.slug}`} />
         </div>
       </section>
     </div>

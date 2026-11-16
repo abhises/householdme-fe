@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Photo } from "@/components/site/Photo";
+import { pageParam, SitePagination } from "@/components/site/SitePagination";
 import { api } from "@/lib/api";
 import { usd } from "@/lib/format";
 import type { Deal, SiteSettings } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Deals" };
 
-export default async function DealsPage() {
-  const { deals, site } = await api<{ deals: Deal[]; site: SiteSettings }>("/deals");
+export default async function DealsPage({ searchParams }: PageProps<"/deals">) {
+  const page = pageParam(await searchParams);
+  const { deals, site, total, pageSize } = await api<{ deals: Deal[]; site: SiteSettings; total: number; pageSize: number }>(`/deals?page=${page}`);
   return (
     <div className="wrap stack" style={{ paddingTop: 36, paddingBottom: 64, gap: 32 }}>
       <div className="stack" style={{ gap: 14, maxWidth: 760 }}>
@@ -16,7 +18,7 @@ export default async function DealsPage() {
         <h1 className="h1" style={{ fontSize: "clamp(40px,6vw,72px)", lineHeight: 0.96, letterSpacing: "-0.04em" }}>Deals</h1>
         <p className="lead">We only show deals on products we&apos;ve tested and recommend ourselves. We compare against the price over the past 90 days, not the list price.</p>
       </div>
-      {deals.length === 0 && <p className="lead">No deals right now. Check back soon.</p>}
+      {total === 0 && <p className="lead">No deals right now. Check back soon.</p>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,280px),1fr))", gap: 20 }}>
         {deals.map((d) => {
           const p = d.product;
@@ -46,6 +48,7 @@ export default async function DealsPage() {
           );
         })}
       </div>
+      <SitePagination page={page} total={total} pageSize={pageSize} path="/deals" />
     </div>
   );
 }

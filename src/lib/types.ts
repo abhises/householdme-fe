@@ -155,7 +155,12 @@ export interface Guide {
 }
 
 /** Guide with the minimal relations used on cards */
-export interface GuideCard extends Omit<Guide, "author" | "category" | "products"> {
+/** The columns the public API sends for guide cards (see guideCardSelect in householdme-be). */
+export interface GuideCard
+  extends Pick<
+    Guide,
+    "id" | "slug" | "type" | "title" | "short" | "intro" | "modelsTested" | "testWeeks" | "updatedLabel" | "publishedLabel" | "photoNote" | "coverImage" | "heroImage" | "sortOrder"
+  > {
   category: CategoryRef;
   author: { slug: string; name: string; role: string; imageUrl: string | null };
   products: { slug: string; name: string; rank: number }[];

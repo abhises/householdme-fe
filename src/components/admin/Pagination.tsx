@@ -7,7 +7,7 @@ import { useCallback, useEffect } from 'react';
 /** Response shape of a paged admin list (`?page=` sent). */
 export type Paged = { page: number; pageSize: number; total: number };
 
-export const PAGE_SIZES = [5, 10, 20, 40];
+export const PAGE_SIZES = [5, 10, 25];
 export const DEFAULT_PAGE_SIZE = 10;
 
 export type Paging = { page: number; pageSize: number; setPage: (p: number) => void; setPageSize: (n: number) => void };

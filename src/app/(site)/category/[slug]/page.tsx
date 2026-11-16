@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthorRow } from "@/components/site/bits";
 import { Photo } from "@/components/site/Photo";
+import { pageParam, SitePagination } from "@/components/site/SitePagination";
 import { api } from "@/lib/api";
 import type { AuthorCard, Category, GuideCard } from "@/lib/types";
 
@@ -9,6 +10,9 @@ interface CategoryData {
   category: Category & { guides: GuideCard[] };
   authors: AuthorCard[];
   others: { slug: string; name: string }[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export async function generateMetadata({ params }: PageProps<"/category/[slug]">): Promise<Metadata> {
@@ -17,9 +21,10 @@ export async function generateMetadata({ params }: PageProps<"/category/[slug]">
   return { title: category.name, description: category.intro };
 }
 
-export default async function CategoryPage({ params }: PageProps<"/category/[slug]">) {
+export default async function CategoryPage({ params, searchParams }: PageProps<"/category/[slug]">) {
   const { slug } = await params;
-  const { category: cat, authors, others } = await api<CategoryData>(`/categories/${slug}`);
+  const page = pageParam(await searchParams);
+  const { category: cat, authors, others, total, pageSize } = await api<CategoryData>(`/categories/${slug}?page=${page}`);
 
   return (
     <div className="wrap stack" style={{ paddingTop: 28, paddingBottom: 64, gap: 40 }}>
@@ -35,7 +40,8 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
 
       <div className="stack" style={{ gap: 20 }}>
         <h2 className="h2 h2-rule" style={{ fontSize: 26 }}>Buying guides</h2>
-        {cat.guides.length === 0 && <p className="lead">No buying guides in this category yet.</p>}
+        {total === 0 && <p className="lead">No buying guides in this category yet.</p>}
+        {total > 0 && cat.guides.length === 0 && <p className="lead">This page is empty. <Link href={`/category/${cat.slug}`}>Back to page 1</Link></p>}
         {cat.guides.map((g) => (
           <Link key={g.slug} href={`/${g.slug}`} className="nolink" style={{ display: "flex", flexWrap: "wrap", gap: 24, borderBottom: "1px solid var(--line)", paddingBottom: 24 }}>
             <Photo src={g.coverImage} alt={g.title} label={<>own test photo: {g.photoNote}</>} style={{ flex: "1 1 260px", maxWidth: 380, aspectRatio: "3/2" }} />
@@ -52,6 +58,7 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
             </div>
           </Link>
         ))}
+        <SitePagination page={page} total={total} pageSize={pageSize} path={`/category/${cat.slug}`} />
       </div>
 
       {authors.length > 0 && (

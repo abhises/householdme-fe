@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { adminApi, errorText } from "@/lib/admin-api";
 import type { Media } from "@/lib/types";
 import { useConfirm } from "./ConfirmDialog";
-import { DEFAULT_PAGE_SIZE, Pagination, usePaging, type Paged, type Paging } from "./Pagination";
+import { Pagination, usePaging, type Paged, type Paging } from "./Pagination";
 
 type MediaPage = { items: Media[]; driver: string } & Paged;
 
@@ -23,7 +23,7 @@ export function MediaLibrary({ onPick }: { onPick?: (m: Media) => void }) {
   // the page lives in the URL on the Media page, but in local state inside the editors' picker
   const urlPaging = usePaging();
   const [localPage, setLocalPage] = useState(1);
-  const [localSize, setLocalSize] = useState(DEFAULT_PAGE_SIZE * 2);
+  const [localSize, setLocalSize] = useState(25);
   const { page, pageSize, setPage, setPageSize }: Paging = onPick
     ? { page: localPage, pageSize: localSize, setPage: setLocalPage, setPageSize: (n) => { setLocalSize(n); setLocalPage(1); } }
     : urlPaging;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { pageParam, SitePagination } from "@/components/site/SitePagination";
 import { api } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Search" };
@@ -7,12 +8,15 @@ export const metadata: Metadata = { title: "Search" };
 interface SearchData {
   q: string;
   results: { type: string; title: string; meta: string; href: string }[];
+  total: number;
+  pageSize: number;
 }
 
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
-  const { results } = await api<SearchData>(`/search?q=${encodeURIComponent(q)}`);
+  const page = pageParam(sp);
+  const { results, total, pageSize } = await api<SearchData>(`/search?q=${encodeURIComponent(q)}&page=${page}`);
   return (
     <div className="stack" style={{ maxWidth: 900, margin: "0 auto", padding: "36px 20px 64px", gap: 24 }}>
       <h1 className="h1" style={{ fontSize: "clamp(36px,5vw,56px)" }}>Search</h1>
@@ -28,7 +32,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
         />
       </form>
       <span style={{ fontSize: 14, color: "var(--muted)" }}>
-        {q ? `${results.length} results for "${q}"` : `All ${results.length} buying guides`}
+        {q ? `${total} results for "${q}"` : `All ${total} articles`}
       </span>
       <div className="stack">
         {results.map((r) => (
@@ -39,6 +43,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           </Link>
         ))}
       </div>
+      <SitePagination page={page} total={total} pageSize={pageSize} path="/search" params={q ? { q } : {}} />
     </div>
   );
 }
