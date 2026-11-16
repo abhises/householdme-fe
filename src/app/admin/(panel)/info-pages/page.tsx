@@ -1,38 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useConfirm } from "@/components/admin/ConfirmDialog";
-import { FormFields, type FieldDef } from "@/components/admin/FormFields";
 import { Pagination } from "@/components/admin/Pagination";
 import { usePagedList } from "@/components/admin/usePagedList";
-import { adminApi, errorText, slugify } from "@/lib/admin-api";
-import type { InfoPage } from "@/lib/types";
+import { adminApi, errorText } from "@/lib/admin-api";
+import { CONTACT_PAGE_SLUG, type InfoPage } from "@/lib/types";
 
-type Edit = { id: string; title: string; slug: string; lead: string; sections: { heading: string; body: string }[]; sortOrder: number };
-const blank: Edit = { id: "", title: "", slug: "", lead: "", sections: [], sortOrder: 0 };
-const SECTIONS: FieldDef[] = [
-  { key: "sections", label: "Sections", type: "list", itemLabel: "{{heading}}", fields: [{ key: "heading", label: "Heading", type: "text" }, { key: "body", label: "Text", type: "textarea", rows: 5 }] },
-];
+const kind = (p: InfoPage) =>
+  p.slug === CONTACT_PAGE_SLUG ? "Contact form" : p.doc ? "Sections" : p.html.trim() ? "HTML" : "Classic";
 
 export default function InfoPagesPage() {
   const confirm = useConfirm();
-  const { rows, meta, error: loadError, load, setPage, setPageSize } = usePagedList<InfoPage>("info-pages");
-  const [edit, setEdit] = useState<Edit | null>(null);
-  const [error, setError] = useState("");
+  const [q, setQ] = useState("");
+  const { rows, meta, error, setError, load, page, setPage, setPageSize } = usePagedList<InfoPage>("info-pages", q ? `q=${encodeURIComponent(q)}` : "");
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!edit) return;
-    setError("");
-    const { id, ...body } = edit;
-    try {
-      await adminApi(id ? `/info-pages/${id}` : "/info-pages", { method: id ? "PUT" : "POST", json: { ...body, slug: body.slug || slugify(body.title) } });
-      setEdit(null);
-      load();
-    } catch (err) {
-      setError(errorText(err));
-    }
-  };
   const remove = async (p: InfoPage) => {
     if (!(await confirm({ title: `Delete "${p.title}"?`, message: `/info/${p.slug} will show “page not found”. Links in the footer may point to it.` }))) return;
     try {
@@ -47,48 +30,47 @@ export default function InfoPagesPage() {
     <>
       <div className="ad-head">
         <div>
-          <h1>Info pages</h1>
-          <p className="ad-hint" style={{ margin: "4px 0 0" }}>Transparency pages such as editorial guidelines, privacy and contact.</p>
+          <h1>Pages {meta && <span className="ad-hint">({meta.total})</span>}</h1>
+          <p className="ad-hint" style={{ margin: "4px 0 0" }}>Site pages such as editorial guidelines, privacy and terms. Built with sections, like posts.</p>
         </div>
-        <button className="ad-btn ad-btn--primary" onClick={() => { setEdit({ ...blank, sortOrder: meta?.total ?? 0 }); setError(""); }}>+ New page</button>
+        <Link className="ad-btn ad-btn--primary" href="/admin/info-pages/new">+ Add new page</Link>
       </div>
-      {edit && (
-        <form className="ad-card ad-form" style={{ marginBottom: 16, maxWidth: 760 }} onSubmit={save} key={edit.id || "new"}>
-          <div className="ad-2">
-            <label>Title<input required value={edit.title} onChange={(e) => setEdit({ ...edit, title: e.target.value })} /></label>
-            <label>Slug<input value={edit.slug} placeholder="from title" onChange={(e) => setEdit({ ...edit, slug: e.target.value })} /><span className="ad-hint">/info/{edit.slug || slugify(edit.title) || "…"}</span></label>
-          </div>
-          <label>Lead<textarea className="sf-text" value={edit.lead} onChange={(e) => setEdit({ ...edit, lead: e.target.value })} /></label>
-          <FormFields fields={SECTIONS} value={edit} onChange={(v) => setEdit({ ...edit, sections: v.sections })} />
-          <label>Sort order<input type="number" value={edit.sortOrder} onChange={(e) => setEdit({ ...edit, sortOrder: Number(e.target.value) })} /></label>
-          {error && <p className="ad-error">{error}</p>}
-          <div className="ad-savebar">
-            <button className="ad-btn ad-btn--primary">Save</button>
-            <button type="button" className="ad-btn" onClick={() => setEdit(null)}>Cancel</button>
-            {edit.slug && <a className="ad-btn" href={`/info/${edit.slug}`} target="_blank" rel="noreferrer">View ↗</a>}
-          </div>
-        </form>
+      <div className="ad-filters">
+        <input placeholder="Search pages" value={q} onChange={(e) => { setQ(e.target.value); if (page > 1) setPage(1); }} />
+      </div>
+      {error && <p className="ad-error">{error}</p>}
+      {!rows ? <p>Loading…</p> : (
+        <table className="ad-table">
+          <thead><tr><th>Title</th><th className="ad-cell-hide">URL</th><th>Built with</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {rows.map((p) => {
+              const contact = p.slug === CONTACT_PAGE_SLUG;
+              return (
+                <tr key={p.id}>
+                  <td className="ad-cell-main">
+                    {contact ? <strong>{p.title}</strong> : <Link href={`/admin/info-pages/${p.id}`}><strong>{p.title}</strong></Link>}
+                    {p.lead && <div className="ad-hint">{p.lead}</div>}
+                  </td>
+                  <td className="ad-cell-hide">{contact ? "/contact" : `/info/${p.slug}`}</td>
+                  <td><span className={`ad-pill${kind(p) === "Sections" ? " ad-pill--custom" : ""}`}>{kind(p)}</span></td>
+                  <td><span className={`ad-pill ad-pill--${p.published ? "published" : "draft"}`}>{p.published ? "Published" : "Draft"}</span></td>
+                  <td className="ad-cell-end" style={{ whiteSpace: "nowrap" }}>
+                    {contact ? (
+                      <Link className="ad-btn ad-btn--sm" href="/admin/messages">Messages</Link>
+                    ) : (
+                      <>
+                        <Link className="ad-btn ad-btn--sm" href={`/admin/info-pages/${p.id}`}>Edit</Link>{" "}
+                        <button className="ad-btn ad-btn--sm ad-btn--danger" onClick={() => remove(p)}>Delete</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {rows.length === 0 && <tr><td colSpan={5}>{q ? "No pages match." : "No pages yet."}</td></tr>}
+          </tbody>
+        </table>
       )}
-      {!edit && error && <p className="ad-error">{error}</p>}
-      {loadError && <p className="ad-error">{loadError}</p>}
-      <table className="ad-table">
-        <thead><tr><th>#</th><th>Title</th><th>URL</th><th>Sections</th><th></th></tr></thead>
-        <tbody>
-          {rows?.map((p) => (
-            <tr key={p.id}>
-              <td className="ad-cell-hide">{p.sortOrder}</td>
-              <td className="ad-cell-main"><strong>{p.title}</strong><div className="ad-hint">{p.lead}</div></td>
-              <td className="ad-cell-hide">/info/{p.slug}</td>
-              <td>{p.sections.length}<span className="ad-sm-only"> sections</span></td>
-              <td className="ad-cell-end" style={{ whiteSpace: "nowrap" }}>
-                <button className="ad-btn ad-btn--sm" onClick={() => { setEdit({ id: p.id, title: p.title, slug: p.slug, lead: p.lead, sections: p.sections, sortOrder: p.sortOrder }); setError(""); window.scrollTo({ top: 0 }); }}>Edit</button>{" "}
-                <button className="ad-btn ad-btn--sm ad-btn--danger" onClick={() => remove(p)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-          {rows?.length === 0 && <tr><td colSpan={5}>No pages yet.</td></tr>}
-        </tbody>
-      </table>
       {meta && <Pagination {...meta} onChange={setPage} onPageSizeChange={setPageSize} />}
     </>
   );

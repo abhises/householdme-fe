@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthorRow } from "@/components/site/bits";
+import { PendingHint } from "@/components/site/PendingHint";
 import { Photo } from "@/components/site/Photo";
 import { pageParam, SitePagination } from "@/components/site/SitePagination";
 import { api } from "@/lib/api";
@@ -74,8 +75,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
         <h2 style={{ fontSize: 22, margin: 0, fontWeight: 900 }}>Other categories</h2>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {others.map((o) => (
-            <Link key={o.slug} href={`/category/${o.slug}`} className="chip">
+            <Link key={o.slug} href={`/category/${o.slug}`} className="chip" style={{ position: "relative" }}>
               {o.name}
+              <PendingHint />
             </Link>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingHint } from "./PendingHint";
 
 export const SITE_PAGE_SIZE = 25;
 
@@ -45,8 +46,9 @@ export function SitePagination({
         p === "…" ? (
           <span key={`gap${i}`} className="pager-gap">…</span>
         ) : (
-          <Link key={p} href={href(p)} aria-current={p === page ? "page" : undefined}>
+          <Link key={p} href={href(p)} aria-current={p === page ? "page" : undefined} style={{ position: "relative" }}>
             {p}
+            <PendingHint />
           </Link>
         ),
       )}

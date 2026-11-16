@@ -12,6 +12,15 @@ const STARTERS: Record<PostType, [string, Record<string, unknown>?][]> = {
   INFO_ARTICLE: [['post-header', { tag: 'Explained', copyLink: true }], ['short-answer'], ['stats'], ['text'], ['steps'], ['faq'], ['author-box'], ['sources'], ['keep-reading']],
 };
 
+/** A new site page, laid out like a post: header with details row, text sections beside a table of contents, links to the other pages. */
+export function pageStarterDoc(types: SectionType[]): SectionsDoc {
+  const byKey = new Map(types.map((t) => [t.key, t]));
+  const items = ([['page-header', { meta: [{ label: 'Written by', value: 'The HouseholdMe editors', url: '/team' }] }], ['text'], ['text'], ['page-links']] as [string, Record<string, unknown>?][])
+    .filter(([k]) => byKey.has(k))
+    .map(([k, extra]) => ({ id: newId(), type: k, data: { ...emptyData(byKey.get(k)!.fields), ...extra } }));
+  return { layout: 'toc', tocTitle: 'On this page', className: 'bq-page', items };
+}
+
 export function starterDoc(type: PostType, types: SectionType[]): SectionsDoc {
   const byKey = new Map(types.map((t) => [t.key, t]));
   const items = STARTERS[type].filter(([k]) => byKey.has(k)).map(([k, extra]) => ({ id: newId(), type: k, data: { ...emptyData(byKey.get(k)!.fields), ...extra } }));
@@ -22,9 +31,9 @@ const LAYOUTS: [SectionsDoc['layout'], string][] = [['toc', 'With table of conte
 
 export function SectionsEditor({ doc, onChange, selected, onSelect, types, scope = 'post' }: {
   doc: SectionsDoc; onChange: (d: SectionsDoc) => void; selected: string | null; onSelect: (id: string | null) => void;
-  types: SectionType[]; scope?: 'post' | 'home';
+  types: SectionType[]; scope?: 'post' | 'home' | 'page';
 }) {
-  const showLayout = scope === 'post';
+  const showLayout = scope !== 'home';
   const [adding, setAdding] = useState(false);
   const byKey = useMemo(() => new Map(types.map((t) => [t.key, t])), [types]);
   const items = doc.items;
@@ -92,7 +101,7 @@ export function SectionsEditor({ doc, onChange, selected, onSelect, types, scope
               </span>
             </div>
             {selType?.description && <p className="ad-hint" style={{ margin: '0 0 10px' }}>{selType.description}</p>}
-            {scope === 'post' && (
+            {showLayout && (
               <details className="se-adv"><summary>Position and table of contents</summary>
                 <div className="ad-form" style={{ gap: 8, marginTop: 8 }}>
                   <label>Position<select value={sel.placement ?? ''} onChange={(e) => update(sel.id, { placement: (e.target.value || undefined) as SectionItem['placement'] })}>
@@ -110,7 +119,7 @@ export function SectionsEditor({ doc, onChange, selected, onSelect, types, scope
         )}
       </div>
 
-      {adding && <AddSection types={types.filter((t) => t.scope === 'any' || t.scope === scope)} onPick={add} onClose={() => setAdding(false)} />}
+      {adding && <AddSection types={types.filter((t) => t.scope === 'any' || t.scope === scope || (scope === 'page' && t.scope === 'post'))} onPick={add} onClose={() => setAdding(false)} />}
     </div>
   );
 }

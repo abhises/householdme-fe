@@ -173,8 +173,21 @@ export interface InfoPage {
   lead: string;
   sections: { heading: string; body: string }[];
   sortOrder: number;
+  published: boolean;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  coverImage: string | null;
+  jsonLd: string | null;
+  /** Page body for section / HTML pages. Empty with no `doc` = the classic template. */
+  html: string;
+  css: string;
+  /** Section builder document (same shape as a post's sections) */
+  doc: SectionsDoc | null;
   updatedAt: string;
 }
+
+/** The info page that became the contact form at /contact; it isn't built in the page editor. */
+export const CONTACT_PAGE_SLUG = "contact";
 
 export interface Deal {
   id: string;
@@ -259,7 +272,7 @@ export interface SectionFieldDef {
 }
 export interface SectionType {
   id: string; key: string; name: string; group: string; description: string; fields: SectionFieldDef[]; template: string; css: string;
-  sample: Record<string, unknown>; tocLabel: string; placement: "top" | "body" | "bottom"; scope: "any" | "post" | "home";
+  sample: Record<string, unknown>; tocLabel: string; placement: "top" | "body" | "bottom"; scope: "any" | "post" | "home" | "page";
   builtIn: boolean; version: number; updatedAt: string;
 }
 export interface SectionItem { id: string; type: string; data: Record<string, unknown>; hidden?: boolean; placement?: "top" | "body" | "bottom"; tocLabel?: string }

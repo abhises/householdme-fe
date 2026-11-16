@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
+import { PendingHint } from "./PendingHint";
 
 // Guide and review pages mark their category with <ActiveCategory slug="..." />.
 let activeSlug: string | null = null;
@@ -33,13 +34,16 @@ export function NavLinks({ categories }: { categories: { slug: string; name: str
       {categories.map((c) => (
         <Link key={c.slug} href={`/category/${c.slug}`} className={current === c.slug ? "active" : undefined}>
           {c.name}
+          <PendingHint />
         </Link>
       ))}
       <Link href="/deals" className="deals">
         Deals
+        <PendingHint />
       </Link>
       <Link href="/how-we-test" className="method">
         How we test
+        <PendingHint />
       </Link>
     </div>
   );
