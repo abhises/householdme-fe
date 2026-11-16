@@ -41,6 +41,7 @@ const MENU: Group[] = [
   { href: "/admin/media", label: "Media", icon: "media" },
   { href: "/admin/categories", label: "Categories", icon: "categories" },
   { href: "/admin/authors", label: "Authors", icon: "authors" },
+  { href: "/admin/messages", label: "Messages", icon: "messages" },
   { href: "/admin/subscribers", label: "Subscribers", icon: "subscribers" },
   {
     href: "/admin/settings",
@@ -62,6 +63,7 @@ const ICONS = {
   categories: "M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z",
   authors: "M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9m-8 9c0-4.4 3.6-7 8-7s8 2.6 8 7z",
   subscribers: "M3 5h18v14H3zm0 1 9 7 9-7",
+  messages: "M4 4h16v12H8l-4 4zm4 5h8M8 12h5",
   settings:
     "M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M19.4 13a7.4 7.4 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.4 7.4 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 0 0 1.7 1L11 21h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.5z",
 };
@@ -85,6 +87,7 @@ export function AdminNav() {
   const open = MENU.find(isOpen);
   const nav = useRef<HTMLElement>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [unread, setUnread] = useState(0);
 
   // On phones the menu is a sideways-scrolling row: keep the current section visible.
   useEffect(() => {
@@ -95,6 +98,17 @@ export function AdminNav() {
       .then((r) => setEmail(r.user.email))
       .catch(() => {});
   }, []);
+
+  // Unread contact messages badge: refresh on navigation and when the Messages screen changes something.
+  useEffect(() => {
+    const refresh = () =>
+      adminApi<{ unread: number }>("/messages/unread-count")
+        .then((r) => setUnread(r.unread))
+        .catch(() => {});
+    refresh();
+    window.addEventListener("hm:messages-changed", refresh);
+    return () => window.removeEventListener("hm:messages-changed", refresh);
+  }, [path]);
 
   const logout = async () => {
     await adminApi("/api/auth/logout", { method: "POST" }).catch(() => {});
@@ -127,6 +141,9 @@ export function AdminNav() {
                 <path d={ICONS[g.icon]} />
               </svg>
               {g.label}
+              {g.icon === "messages" && unread > 0 && (
+                <span className="ad-nav__count" aria-label={`${unread} unread`}>{unread}</span>
+              )}
             </Link>
             {g.items && <div className="ad-sub">{subLinks(g.items)}</div>}
           </div>

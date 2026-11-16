@@ -180,6 +180,18 @@ export interface Deal {
   product: Product & { guide: { slug: string; short: string } };
 }
 
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  topic: string;
+  subject: string;
+  message: string;
+  read: boolean;
+  ip: string | null;
+  userAgent: string | null;
+  createdAt: string;
+}
 export interface Subscriber { id: string; email: string; source: string | null; createdAt: string }
 
 export interface Media {

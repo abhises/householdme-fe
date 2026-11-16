@@ -9,7 +9,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Posts used to live under /guide/<slug>; they are now at the root.
   async redirects() {
-    return [{ source: "/guide/:slug", destination: "/:slug", permanent: true }];
+    return [
+      { source: "/guide/:slug", destination: "/:slug", permanent: true },
+      // The contact info page became a real form at /contact.
+      { source: "/info/contact", destination: "/contact", permanent: true },
+    ];
   },
   async rewrites() {
     return [

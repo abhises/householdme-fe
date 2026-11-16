@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 import { adminApi, errorText } from "@/lib/admin-api";
 
 type Stats = {
-  counts: Record<"guides" | "products" | "categories" | "authors" | "deals" | "subscribers" | "media" | "infoPages" | "awards", number>;
+  counts: Record<"guides" | "products" | "categories" | "authors" | "deals" | "subscribers" | "media" | "infoPages" | "awards" | "messages" | "unreadMessages", number>;
   recentGuides: { id: string; title: string; slug: string; updatedAt: string }[];
   recentSubscribers: { id: string; email: string; source: string | null; createdAt: string }[];
+  recentMessages: { id: string; name: string; email: string; subject: string; topic: string; read: boolean; createdAt: string }[];
   storage: "local" | "s3";
 };
 
@@ -18,6 +19,7 @@ const GLANCE: [keyof Stats["counts"], string, string][] = [
   ["media", "Media files", "/admin/media"],
   ["categories", "Categories", "/admin/categories"],
   ["authors", "Authors", "/admin/authors"],
+  ["messages", "Messages", "/admin/messages"],
   ["subscribers", "Subscribers", "/admin/subscribers"],
 ];
 
@@ -87,6 +89,30 @@ export default function DashboardPage() {
             </ul>
           )}
           <Link href="/admin/guides" className="ad-more">All posts →</Link>
+        </section>
+
+        <section className="ad-panel">
+          <h2>
+            Contact messages{" "}
+            {stats && stats.counts.unreadMessages > 0 && <span className="ad-nav__count">{stats.counts.unreadMessages} unread</span>}
+          </h2>
+          {!stats ? (
+            <p className="ad-hint">Loading…</p>
+          ) : stats.recentMessages.length === 0 ? (
+            <p className="ad-hint">No messages yet. They arrive from the <a href="/contact" target="_blank" rel="noreferrer">contact page</a>.</p>
+          ) : (
+            <ul className="ad-activity">
+              {stats.recentMessages.map((m) => (
+                <li key={m.id}>
+                  <span className="ad-hint">{when(m.createdAt)}</span>
+                  <Link href="/admin/messages" style={m.read ? { fontWeight: 500 } : undefined}>
+                    {m.name}{m.subject ? ` — ${m.subject}` : ""}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href="/admin/messages" className="ad-more">All messages →</Link>
         </section>
 
         <section className="ad-panel">

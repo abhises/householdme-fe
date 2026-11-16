@@ -48,7 +48,7 @@ export function HelpfulVote({ slug }: { slug: string }) {
     <section className="box" style={{ padding: 20, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
       {voted ? (
         <span style={{ fontSize: 15, fontWeight: 700 }}>
-          Thanks for your feedback. Missing something? <Link href="/info/contact">Let us know</Link>.
+          Thanks for your feedback. Missing something? <Link href="/contact">Let us know</Link>.
         </span>
       ) : (
         <>

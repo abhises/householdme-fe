@@ -220,3 +220,21 @@ button, input, select, textarea { font-family: var(--font); }
 @media (max-width: 759px) {
   .guide-hero { max-width: none !important; aspect-ratio: 16/9; min-height: 0 !important; }
 }
+
+/* Contact page */
+.contact-form { display: flex; flex-direction: column; gap: 16px; position: relative; }
+.contact-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+.contact-form label { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.contact-form label > span { font-size: 14px; font-weight: 800; }
+.contact-form label > span em { font-style: normal; font-weight: 500; color: var(--muted); }
+.contact-form input, .contact-form select, .contact-form textarea {
+  border: 2px solid var(--ink); padding: 13px 14px; font-size: 16px; background: #fff; color: var(--ink); width: 100%; min-width: 0; border-radius: 0;
+}
+.contact-form textarea { resize: vertical; min-height: 160px; line-height: 1.55; }
+.contact-form :is(input, select, textarea):focus { outline: 3px solid var(--sky); outline-offset: 0; border-color: var(--blue); }
+.contact-form [aria-invalid="true"] { border-color: var(--bad); }
+.contact-form .form-error { margin: 0; }
+.contact-form .btn:disabled { opacity: 0.6; cursor: default; }
+.contact-done { background: var(--sky); padding: 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.contact-done strong { font-size: 19px; }
+.contact-done p { margin: 0; color: var(--body); overflow-wrap: anywhere; }

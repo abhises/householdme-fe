@@ -302,7 +302,7 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
                     </div>
                   </div>
                 ))}
-                <Link href="/info/contact" style={{ fontSize: 14, fontWeight: 700 }}>Ask a question</Link>
+                <Link href="/contact" style={{ fontSize: 14, fontWeight: 700 }}>Ask a question</Link>
               </section>
             )}
 

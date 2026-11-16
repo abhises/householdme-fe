@@ -29,7 +29,7 @@ export default async function TeamPage() {
       <div style={{ display: "flex", gap: "10px 24px", flexWrap: "wrap", fontSize: 15, fontWeight: 700, borderTop: "3px solid var(--ink)", paddingTop: 20 }}>
         <Link href="/how-we-test">How we test</Link>
         <Link href="/info/guidelines">Editorial guidelines</Link>
-        <Link href="/info/contact">Contact</Link>
+        <Link href="/contact">Contact</Link>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ export function Footer({ site, categories }: { site: SiteSettings; categories: {
             <Link href="/team">Editorial team</Link>
             <Link href="/how-we-test">How we test</Link>
             <Link href="/info/guidelines">Editorial guidelines</Link>
-            <Link href="/info/contact">Contact</Link>
+            <Link href="/contact">Contact</Link>
           </div>
           <div className="col">
             <strong>Transparency</strong>
