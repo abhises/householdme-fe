@@ -10,12 +10,15 @@ interface HomeData {
   hero: GuideCard | null;
   heroSecondary: { slug: string; name: string } | null;
   guides: GuideCard[];
+  reviews: GuideCard[];
+  comparisons: GuideCard[];
+  infoPosts: GuideCard[];
   categories: { slug: string; name: string; _count: { guides: number } }[];
   testers: AuthorCard[];
 }
 
 export default async function HomePage() {
-  const { home, steps, hero, heroSecondary, guides, categories, testers } = await api<HomeData>("/home");
+  const { home, steps, hero, heroSecondary, guides, reviews = [], comparisons = [], infoPosts = [], categories, testers } = await api<HomeData>("/home");
 
   return (
     <div>
@@ -75,17 +78,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="wrap stack" style={{ paddingTop: 52, paddingBottom: 52, gap: 28 }}>
-        <div className="section-head">
-          <h2 className="h2">Latest buying guides</h2>
-          <Link href="/search">All buying guides →</Link>
-        </div>
-        <div className="grid-cards">
-          {guides.map((g) => (
-            <GuideCardItem key={g.slug} g={g} />
-          ))}
-        </div>
-      </section>
+      <PostSection title="Latest buying guides" posts={guides} link={{ href: "/search", label: "All buying guides →" }} first />
+      <PostSection title="Latest reviews" posts={reviews} />
+      <PostSection title="Latest comparisons" posts={comparisons} />
+      <PostSection title="Explained" posts={infoPosts} />
 
       <section className="wrap stack" style={{ paddingBottom: 52, gap: 20 }}>
         <h2 className="h2 h2-rule">Categories</h2>
@@ -148,5 +144,22 @@ export default async function HomePage() {
         <NewsletterBand title="One email a week with our latest test results" text="Plus deals we've checked ourselves. Unsubscribe anytime." source="home" />
       </section>
     </div>
+  );
+}
+
+function PostSection({ title, posts, link, first }: { title: string; posts: GuideCard[]; link?: { href: string; label: string }; first?: boolean }) {
+  if (!posts.length) return null;
+  return (
+    <section className="wrap stack" style={{ paddingTop: first ? 52 : 0, paddingBottom: 52, gap: 28 }}>
+      <div className="section-head">
+        <h2 className="h2">{title}</h2>
+        {link && <Link href={link.href}>{link.label}</Link>}
+      </div>
+      <div className="grid-cards">
+        {posts.map((g) => (
+          <GuideCardItem key={g.slug} g={g} />
+        ))}
+      </div>
+    </section>
   );
 }

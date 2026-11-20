@@ -240,6 +240,10 @@ export interface HomeSettings {
   heroIntro: string;
   heroSecondaryProductSlug: string;
   guideSlugs: string[];
+  /** Hand-picked posts per front-page section; empty slots fill with the newest posts of that type */
+  reviewSlugs: string[];
+  comparisonSlugs: string[];
+  infoSlugs: string[];
   trustFacts: { value: string; label: string }[];
   testTitle: string;
   testText: string;

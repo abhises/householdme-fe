@@ -78,7 +78,7 @@ export function GuideCardItem({ g }: { g: GuideCard }) {
   return (
     <Link href={`/${g.slug}`} className="nolink stack" style={{ gap: 12 }}>
       <Photo src={g.coverImage} alt={g.title} label={<>own test photo: {g.photoNote}</>} style={{ aspectRatio: "3/2" }}>
-        <span className="ph-badge">{g.modelsTested} tested</span>
+        {g.modelsTested > 0 && <span className="ph-badge">{g.modelsTested} tested</span>}
       </Photo>
       <div className="eyebrow eyebrow-blue">{g.category.name}</div>
       <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, letterSpacing: "-0.02em", color: "var(--ink)", textWrap: "balance" }}>{g.title}</div>
