@@ -81,7 +81,7 @@ export default async function HomePage() {
       <PostSection title="Latest buying guides" posts={guides} link={{ href: "/search", label: "All buying guides →" }} first />
       <PostSection title="Latest reviews" posts={reviews} />
       <PostSection title="Latest comparisons" posts={comparisons} />
-      <PostSection title="Explained" posts={infoPosts} />
+      <PostSection title="Latest info posts" posts={infoPosts} />
 
       <section className="wrap stack" style={{ paddingBottom: 52, gap: 20 }}>
         <h2 className="h2 h2-rule">Categories</h2>

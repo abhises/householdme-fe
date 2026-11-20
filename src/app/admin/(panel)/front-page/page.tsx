@@ -49,7 +49,7 @@ export default function FrontPageEditor() {
           <PostPicker label="Latest buying guides" hint="Shown in this order under “Latest buying guides”." type="BUYING_GUIDE" guides={guides} slugs={h.guideSlugs} onChange={(v) => s.update({ guideSlugs: v })} />
           <PostPicker label="Latest reviews" type="SINGLE_REVIEW" guides={guides} slugs={h.reviewSlugs ?? []} onChange={(v) => s.update({ reviewSlugs: v })} />
           <PostPicker label="Latest comparisons" type="COMPARISON" guides={guides} slugs={h.comparisonSlugs ?? []} onChange={(v) => s.update({ comparisonSlugs: v })} />
-          <PostPicker label="Explained (info articles)" type="INFO_ARTICLE" guides={guides} slugs={h.infoSlugs ?? []} onChange={(v) => s.update({ infoSlugs: v })} />
+          <PostPicker label="Latest info posts" type="INFO_ARTICLE" guides={guides} slugs={h.infoSlugs ?? []} onChange={(v) => s.update({ infoSlugs: v })} />
         </div>
         <div className="fp-preview">
           <EditorPreview url="/" reloadKey={s.savedAt} mobile={mobile} />
