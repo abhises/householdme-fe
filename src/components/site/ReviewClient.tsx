@@ -2,22 +2,19 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { NewsletterForm, SUBSCRIBED_KEY } from "./NewsletterForm";
 
-export function Gallery({ images, name, score }: { images: string[]; name: string; score: string }) {
+export function Gallery({ images, name }: { images: string[]; name: string }) {
   const caps = [`${name} front view`, `${name} in use in the test house`, `${name} control details`, `${name} next to the competition`];
-  const slots = [0, 1, 2, 3].map((i) => images[i] ?? images[0] ?? null);
+  const slots = images.slice(0, 4);
   const [gi, setGi] = useState(0);
   return (
     <div className="stack" style={{ gap: 8, marginTop: -1 }}>
       <div className="ph" style={{ aspectRatio: "16/10", padding: 16 }}>
-        {slots[gi] ? <img src={slots[gi]!} alt={caps[gi]} /> : <>own test photo: {caps[gi]}</>}
-        <div style={{ position: "absolute", left: 0, top: 0, fontFamily: "var(--font)", background: "var(--blue)", color: "#fff", width: 104, height: 104, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 1 }}>
-          <span style={{ fontSize: 42, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em" }}>{score}</span>
-          <span style={{ fontSize: 12, fontWeight: 700 }}>out of 10</span>
-        </div>
+        <img src={slots[gi]} alt={caps[gi]} />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${slots.length},minmax(0,1fr))`, gap: 8 }}>
         {slots.map((src, i) => (
           <button
             key={i}
@@ -26,7 +23,7 @@ export function Gallery({ images, name, score }: { images: string[]; name: strin
             className="ph"
             style={{ aspectRatio: "16/10", border: i === gi ? "3px solid var(--ink)" : "1px solid var(--line)", cursor: "pointer", padding: 0 }}
           >
-            {src && <img src={src} alt="" style={{ pointerEvents: "none" }} />}
+            <img src={src} alt="" style={{ pointerEvents: "none" }} />
           </button>
         ))}
       </div>
@@ -60,5 +57,58 @@ export function HelpfulVote({ slug }: { slug: string }) {
         </>
       )}
     </section>
+  );
+}
+
+const ALERT_CLOSED_KEY = "hm-price-alert-closed";
+
+/** Mobile only: sticky "Check price" bar, with a dismissible price-alert panel above it once the reader scrolls past the hero. */
+export function MobileBuyBar({ slug, name, shop, href }: { slug: string; name: string; shop: string; href: string }) {
+  const [showAlert, setShowAlert] = useState(false);
+  const [closed, setClosed] = useState(false);
+
+  useEffect(() => {
+    const hidden = () => {
+      try {
+        return !!localStorage.getItem(SUBSCRIBED_KEY) || !!sessionStorage.getItem(ALERT_CLOSED_KEY);
+      } catch {
+        return false;
+      }
+    };
+    const onScroll = () => setShowAlert(window.scrollY > 700 && !hidden());
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const close = () => {
+    try {
+      sessionStorage.setItem(ALERT_CLOSED_KEY, "1");
+    } catch {}
+    setClosed(true);
+  };
+
+  return (
+    <div className="mobile-buy-wrap mobile-only">
+      {showAlert && !closed && (
+        <div className="mobile-alert">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <strong style={{ fontSize: 15 }}>Alert me when the price drops</strong>
+            <button onClick={close} aria-label="Close price alert" className="mobile-alert__close">×</button>
+          </div>
+          <NewsletterForm variant="alert" button="Alert me" placeholder="you@example.com" source={`price-alert:${slug}`} />
+          <span style={{ fontSize: 12, color: "var(--muted)" }}>One email per price drop. Unsubscribe in one click.</span>
+        </div>
+      )}
+      <div className="mobile-buy">
+        <span className="mobile-buy__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+        </span>
+        <span className="stack" style={{ minWidth: 0, flex: "1 1 auto" }}>
+          <strong style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</strong>
+          <span style={{ fontSize: 13, color: "var(--on-dark-2)" }}>See today&rsquo;s price</span>
+        </span>
+        <a href={href} rel="sponsored nofollow" target="_blank" className="mobile-buy__cta">Check price on {shop}</a>
+      </div>
+    </div>
   );
 }

@@ -4,8 +4,9 @@ import { useState, type FormEvent } from "react";
 
 interface Props {
   /** "inline" = blue button on dark band, "boxed" = black-bordered form, "stacked" = popup form */
-  variant?: "inline" | "boxed" | "stacked";
+  variant?: "inline" | "boxed" | "stacked" | "alert";
   button?: string;
+  placeholder?: string;
   source?: string;
   doneClassName?: string;
   onDone?: () => void;
@@ -13,7 +14,7 @@ interface Props {
 
 export const SUBSCRIBED_KEY = "hm-subscribed";
 
-export function NewsletterForm({ variant = "inline", button = "Subscribe", source, doneClassName, onDone }: Props) {
+export function NewsletterForm({ variant = "inline", button = "Subscribe", placeholder = "you@email.com", source, doneClassName, onDone }: Props) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export function NewsletterForm({ variant = "inline", button = "Subscribe", sourc
 
   if (state === "done") {
     return (
-      <p className={doneClassName} style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
+      <p className={doneClassName} style={{ margin: 0, fontSize: variant === "alert" ? 14 : 16, fontWeight: 700 }}>
         Thanks! Confirm your subscription via the email we just sent you.
       </p>
     );
@@ -61,7 +62,7 @@ export function NewsletterForm({ variant = "inline", button = "Subscribe", sourc
         <input
           type="email"
           aria-label="Email address"
-          placeholder="you@email.com"
+          placeholder={placeholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{ border: "2px solid var(--ink)", padding: "13px 14px", fontSize: 15, minWidth: 0 }}
@@ -80,8 +81,8 @@ export function NewsletterForm({ variant = "inline", button = "Subscribe", sourc
   }
 
   return (
-    <form onSubmit={submit} className={`nl-inline ${variant === "boxed" ? "boxed" : ""}`} noValidate>
-      <input type="email" aria-label="Email address" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+    <form onSubmit={submit} className={`nl-inline ${variant === "boxed" ? "boxed" : variant === "alert" ? "nl-alert" : ""}`} noValidate>
+      <input type="email" aria-label="Email address" placeholder={placeholder} value={email} onChange={(e) => setEmail(e.target.value)} />
       <button type="submit" disabled={state === "sending"}>
         {state === "sending" ? "…" : button}
       </button>

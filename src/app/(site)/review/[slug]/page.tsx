@@ -1,9 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActiveCategory } from "@/components/site/NavLinks";
 import { Faq, SourcesAndChanges } from "@/components/site/bits";
 import { Photo } from "@/components/site/Photo";
-import { Gallery, HelpfulVote } from "@/components/site/ReviewClient";
+import { Gallery, HelpfulVote, MobileBuyBar } from "@/components/site/ReviewClient";
+import { NewsletterForm } from "@/components/site/NewsletterForm";
 import { api } from "@/lib/api";
 import { score, usd } from "@/lib/format";
 import type { Author, AuthorCard, Guide, Product, SiteSettings } from "@/lib/types";
@@ -61,97 +63,89 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
     { name: "Rank", cells: g.products.map((o) => o.label) },
     ...p.compareRows,
   ];
-  const histMax = Math.max(1, ...p.priceHistory.map((h) => h.price));
-  const lowest = p.priceHistory.length ? Math.min(...p.priceHistory.map((h) => h.price)) : p.price;
-
-  const scoreCard = (
-    <div className="score-card">
-      <div className="dark-band" style={{ padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ background: "var(--blue)", color: "#fff", width: 76, height: 76, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 32, fontWeight: 800, lineHeight: 1 }}>{sc}</span>
-          <span style={{ fontSize: 11, fontWeight: 700 }}>/ 10</span>
-        </div>
-        <div className="stack" style={{ gap: 4, minWidth: 0 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--blue)" }}>Our test score</span>
-          <strong style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2 }}>{p.name}</strong>
-        </div>
-      </div>
-      {p.subScores.length > 0 && (
-        <div className="stack" style={{ padding: "18px 20px", gap: 9 }}>
-          {p.subScores.map((s) => (
-            <div key={s.label} style={{ display: "grid", gridTemplateColumns: "96px 1fr 30px", gap: 10, alignItems: "center", fontSize: 13 }}>
-              <span style={{ fontWeight: 600 }}>{s.label}</span>
-              <span style={{ height: 8, background: "#eeeef0", display: "block" }}>
-                <span style={{ display: "block", height: 8, background: "var(--ink)", width: `${Math.round(s.value * 10)}%` }} />
-              </span>
-              <b style={{ textAlign: "right" }}>{score(s.value)}</b>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="stack" style={{ padding: "0 20px 20px", gap: 10 }}>
-        {shops.map((s, i) => (
-          <a key={i} href={s.url} rel="sponsored nofollow" target="_blank" className="btn-shop wide">Check price on {s.shop}</a>
-        ))}
-        <span style={{ fontSize: 12, color: "var(--faint)", lineHeight: 1.5 }}>
-          Prices checked {site.pricesCheckedLabel}. We may earn a commission. <Link href="/info/money" style={{ color: "var(--faint)" }}>Learn more</Link>
-        </span>
-      </div>
-      {p.priceHistory.length > 0 && (
-        <div className="stack" style={{ borderTop: "1px solid var(--line)", padding: "16px 20px", gap: 10 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", fontSize: 13 }}>
-            <strong>{p.priceHistory.length}-month price history</strong>
-            <span style={{ color: "var(--muted)" }}>Lowest: <strong style={{ color: "var(--ink)" }}>{usd(lowest)}</strong></span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${p.priceHistory.length},minmax(0,1fr))`, gap: 6, alignItems: "end", height: 72 }}>
-            {p.priceHistory.map((h, i) => (
-              <div key={i} className="stack" style={{ justifyContent: "flex-end", gap: 4, height: "100%" }}>
-                <span className="mono" style={{ fontSize: 11, textAlign: "center", color: "var(--muted)" }}>{usd(h.price)}</span>
-                <span style={{ display: "block", background: i === p.priceHistory.length - 1 ? "var(--blue)" : "var(--ink)", height: `${Math.round((h.price / histMax) * 70)}%` }} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${p.priceHistory.length},minmax(0,1fr))`, gap: 6, fontSize: 11, color: "var(--muted)", textAlign: "center" }}>
-            {p.priceHistory.map((h, i) => <span key={i}>{h.month}</span>)}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const hist = p.priceHistory;
+  const lowest = hist.length ? Math.min(...hist.map((h) => h.price)) : p.price;
+  const photo = p.images[0] ?? g.coverImage ?? null;
 
   return (
     <article style={{ paddingBottom: 64 }}>
       <ActiveCategory slug={g.category.slug} />
-      <div className="dark-band">
-        <div className="wrap stack" style={{ paddingTop: 22, paddingBottom: 44, gap: 16 }}>
-          <nav className="crumbs" style={{ color: "#8a8a90" }}>
-            <Link href="/" style={{ color: "var(--on-dark-3)" }}>Home</Link>
+      <div className="wrap review-hero">
+        <div className="review-hero__text">
+          <nav className="crumbs">
+            <Link href="/">Home</Link>
             <span>/</span>
-            <Link href={`/category/${g.category.slug}`} style={{ color: "var(--on-dark-3)" }}>{g.category.name}</Link>
+            <Link href={`/category/${g.category.slug}`}>{g.category.name}</Link>
             <span>/</span>
-            <Link href={`/${g.slug}`} style={{ color: "var(--on-dark-3)" }}>{g.short}</Link>
+            <Link href={`/${g.slug}`}>{g.short}</Link>
           </nav>
-          <span style={{ color: "var(--blue)", fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", marginTop: 10 }}>
-            Review · {p.label} · {g.short}
-          </span>
-          <h1 className="h1" style={{ fontWeight: 800, fontSize: "clamp(38px,6vw,76px)", letterSpacing: "-0.04em", maxWidth: 980 }}>{p.name} review</h1>
-          <p style={{ fontSize: 19, lineHeight: 1.5, color: "var(--on-dark-2)", margin: 0, maxWidth: 760 }}>{p.subtitle || p.verdict}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 32px", fontSize: 13, color: "var(--on-dark-3)", marginTop: 8, paddingTop: 18, borderTop: "1px solid var(--dark-line)" }}>
-            <span>Tested by <Link href={`/author/${a.slug}`} style={{ color: "#fff", fontWeight: 700 }}>{a.name}</Link></span>
-            {reviewer && <span>Reviewed by <Link href={`/author/${reviewer.slug}`} style={{ color: "#fff", fontWeight: 700 }}>{reviewer.name}</Link></span>}
-            <span>In use <b style={{ color: "#fff" }}>{p.inUseSince || g.publishedLabel}</b></span>
-            <span>Purchase <b style={{ color: "#fff" }}>{p.purchase || "Bought ourselves"}</b></span>
-            <span>Updated <b style={{ color: "#fff" }}>{g.updatedLabel}</b></span>
-            <span>Reading time <b style={{ color: "#fff" }}>{p.readTime || "5 minutes"}</b></span>
+          <span className="tag-dark" style={{ alignSelf: "flex-start", padding: "7px 12px", letterSpacing: "0.1em" }}>Review · {p.label}</span>
+          <h1 className="h1" style={{ fontWeight: 800, fontSize: "clamp(34px,4.4vw,54px)", letterSpacing: "-0.04em" }}>{p.name} review</h1>
+          <p style={{ fontSize: 18, lineHeight: 1.6, color: "var(--body)", margin: 0, textWrap: "pretty" }}>{p.subtitle || p.verdict}</p>
+          <div className="review-hero__score">
+            <div className="score-box">
+              <span style={{ fontSize: 46, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em" }}>{sc}</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>out of 10</span>
+            </div>
+            {p.subScores.length > 0 && (
+              <dl className="sub-scores">
+                {p.subScores.map((s) => (
+                  <div key={s.label}>
+                    <dt>{s.label}</dt>
+                    <dd className="mono">{score(s.value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>
+            Our score is an editorial rating based on hands-on testing. We may earn a commission. <Link href="/info/money" style={{ color: "var(--muted)" }}>Learn more</Link>
+          </p>
+        </div>
+
+        <div className="review-hero__media">
+          <div className="ph review-hero__photo">
+            {photo ? <img src={photo} alt={`${p.name} in our test house`} fetchPriority="high" decoding="async" /> : <>own test photo: {p.name}</>}
+          </div>
+          <div className="price-card">
+            <div className="price-card__hist">
+              <strong style={{ fontSize: 13 }}>{hist.length ? `Price, last ${hist.length} months` : "Price"}</strong>
+              {hist.length > 1 ? <Sparkline values={hist.map((h) => h.price)} /> : <span style={{ fontSize: 26, fontWeight: 800 }}>{usd(p.price)}</span>}
+              <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                Now <b style={{ color: "var(--ink)" }}>{usd(hist.length ? hist[hist.length - 1].price : p.price)}</b>
+                {hist.length > 1 && <> · Lowest <b style={{ color: "var(--green)" }}>{usd(lowest)}</b></>}
+              </span>
+            </div>
+            <div className="price-card__buy">
+              {shops[0] && (
+                <a href={shops[0].url} rel="sponsored nofollow" target="_blank" className="btn-shop wide">Check price on {shops[0].shop} &rarr;</a>
+              )}
+              {shops.length > 1 && (
+                <span style={{ fontSize: 13, color: "var(--muted)" }}>
+                  Also at{" "}
+                  {shops.slice(1).map((s, i) => (
+                    <span key={i}>{i > 0 && ", "}<a href={s.url} rel="sponsored nofollow" target="_blank" style={{ fontWeight: 700 }}>{s.shop}</a></span>
+                  ))}
+                </span>
+              )}
+              <strong style={{ fontSize: 14 }}>Or wait for a better price</strong>
+              <NewsletterForm variant="alert" button="Alert me" placeholder="you@example.com" source={`price-alert:${p.slug}`} />
+              <span style={{ fontSize: 11, color: "var(--faint)" }}>Prices checked {site.pricesCheckedLabel}.</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="wrap">
-        <div className="with-aside">
-          <div className="stack" style={{ flex: "1 1 560px", minWidth: 0, maxWidth: 800, gap: 44 }}>
-            <Gallery images={p.images} name={p.name} score={sc} />
-            <div className="mobile-only">{scoreCard}</div>
+        <div className="stack" style={{ maxWidth: 800, gap: 44, paddingTop: 36 }}>
+            <div className="meta-grid">
+              <span>Tested by <Link href={`/author/${a.slug}`} style={{ fontWeight: 700 }}>{a.name}</Link></span>
+              {reviewer && <span>Reviewed by <Link href={`/author/${reviewer.slug}`} style={{ fontWeight: 700 }}>{reviewer.name}</Link></span>}
+              <span>In use <b style={{ color: "var(--ink)" }}>{p.inUseSince || g.publishedLabel}</b></span>
+              <span>Purchase <b style={{ color: "var(--ink)" }}>{p.purchase || "Bought ourselves"}</b></span>
+              <span>Updated <b style={{ color: "var(--ink)" }}>{g.updatedLabel}</b></span>
+              <span>Reading time <b style={{ color: "var(--ink)" }}>{p.readTime || "5 minutes"}</b></span>
+            </div>
 
             <nav aria-label="In this review" className="stack" style={{ gap: 12 }}>
               <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)" }}>In this review</span>
@@ -159,6 +153,8 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
                 {toc.map(([label, id]) => <a key={id} href={`#${id}`} className="pill">{label}</a>)}
               </div>
             </nav>
+
+            {p.images.length > 1 && <Gallery images={p.images} name={p.name} />}
 
             <section id="p-verdict" className="stack" style={{ gap: 14, borderTop: "3px solid var(--blue)", paddingTop: 20 }}>
               <strong style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--blue-dark)" }}>Our verdict</strong>
@@ -333,24 +329,34 @@ export default async function ReviewPage({ params, searchParams }: PageProps<"/r
               <Link href={`/${g.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{g.title}</Link>
               {related.map((r) => <Link key={r.slug} href={`/${r.slug}`} style={{ fontSize: 16, fontWeight: 700 }}>{r.title}</Link>)}
             </section>
-          </div>
-
-          <aside className="review-aside desktop-only">{scoreCard}</aside>
         </div>
       </div>
 
       {shops[0] && (
         <>
-          <div className="mobile-only" style={{ height: 76 }} />
-          <div className="mobile-buy mobile-flex">
-            <span className="stack" style={{ minWidth: 0 }}>
-              <strong style={{ fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</strong>
-              <span style={{ fontSize: 13, color: "var(--on-dark-2)" }}>from {usd(shops[0].price)} at {shops[0].shop}</span>
-            </span>
-            <a href={shops[0].url} rel="sponsored nofollow" target="_blank" className="btn-shop" style={{ padding: "12px 16px", fontSize: 14, whiteSpace: "nowrap" }}>Check price</a>
-          </div>
+          <div className="mobile-only" style={{ height: 84 }} />
+          <MobileBuyBar slug={p.slug} name={p.name} shop={shops[0].shop} href={shops[0].url} />
         </>
       )}
     </article>
+  );
+}
+
+/** Price-history line: dashed green marks the lowest price, the red dot is today. */
+function Sparkline({ values }: { values: number[] }) {
+  const W = 200, H = 44, pad = 4;
+  const min = Math.min(...values), max = Math.max(...values);
+  const y = (v: number) => (max === min ? H / 2 : pad + ((max - v) / (max - min)) * (H - pad * 2));
+  const x = (i: number) => pad + (i / (values.length - 1)) * (W - pad * 2);
+  const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const last = values.length - 1;
+  return (
+    <div style={{ position: "relative", height: H }}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" role="img" aria-label={`Price history, lowest ${usd(min)}`} style={{ display: "block", overflow: "visible" }}>
+        <line x1={pad} x2={W - pad} y1={y(min)} y2={y(min)} stroke="var(--green)" strokeWidth="1.5" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+        <polyline points={pts} fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <span style={{ position: "absolute", left: `${(x(last) / W) * 100}%`, top: y(values[last]), width: 9, height: 9, margin: "-4.5px 0 0 -4.5px", borderRadius: "50%", background: "var(--red)" }} />
+    </div>
   );
 }

@@ -204,9 +204,50 @@ button, input, select, textarea { font-family: var(--font); }
 .yes { background: var(--green); color: #fff; }
 .no { background: var(--line-2); color: #8a8a90; font-size: 12px; }
 .score-card { background: #fff; border: 1px solid var(--line); box-shadow: 0 18px 40px -24px rgba(28, 28, 30, 0.35); display: flex; flex-direction: column; }
-.review-aside { flex: 0 1 360px; min-width: 300px; position: sticky; top: 20px; margin-top: -72px; z-index: 2; }
 .buy-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: var(--ink); color: #fff; border-top: 3px solid var(--sky); }
-.mobile-buy { position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff; padding: 10px 16px; display: none; align-items: center; justify-content: space-between; gap: 12px; z-index: 10; }
+
+/* review hero: text + score left, wide photo with a horizontal price card right */
+.review-hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: start; padding-top: 32px; }
+.review-hero__text { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.review-hero__score { display: flex; gap: 28px; align-items: center; padding-top: 20px; border-top: 3px solid var(--ink); flex-wrap: wrap; }
+.score-box { width: 120px; height: 120px; flex-shrink: 0; background: var(--sky); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.sub-scores { margin: 0; display: grid; gap: 8px; font-size: 15px; min-width: 200px; }
+.sub-scores div { display: grid; grid-template-columns: minmax(0, 150px) auto; gap: 16px; }
+.sub-scores dd { margin: 0; font-weight: 600; }
+.review-hero__media { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.review-hero__photo { aspect-ratio: 2.1 / 1; padding: 0; }
+.price-card { border: 2px solid var(--ink); background: #fff; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+.price-card__hist { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.price-card__buy { padding: 16px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); background: var(--soft-2); }
+.price-card__buy .btn-shop.wide { border-radius: 0; border: 2px solid var(--ink); }
+.nl-inline.nl-alert { flex-wrap: nowrap; border: 1px solid #b9b9bf; background: #fff; }
+.nl-inline.nl-alert input { flex: 1 1 auto; padding: 12px 14px; font-size: 16px; }
+.nl-inline.nl-alert button { background: var(--green); padding: 12px 18px; white-space: nowrap; flex-shrink: 0; }
+.nl-inline.nl-alert button:hover { background: var(--ink); color: #fff; }
+.nl-inline.nl-alert .form-error { position: absolute; transform: translateY(48px); }
+@media (max-width: 959px) {
+  .review-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 20px; }
+  .review-hero__photo { aspect-ratio: 16 / 10; }
+}
+@media (max-width: 559px) {
+  .price-card { grid-template-columns: minmax(0, 1fr); }
+  .price-card__buy { border-left: 0; border-top: 1px solid var(--line); }
+  .score-box { width: 96px; height: 96px; }
+  .score-box span:first-child { font-size: 38px !important; }
+  .review-hero__score { gap: 18px; }
+  .sub-scores { min-width: 0; flex: 1; font-size: 14px; }
+  .sub-scores div { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+/* mobile: sticky price-alert panel + buy bar */
+.mobile-buy-wrap { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; }
+.mobile-alert { background: #fff; border-top: 2px solid var(--ink); padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -12px 30px -18px rgba(28, 28, 30, 0.45); }
+.mobile-alert__close { background: none; border: 0; font-size: 24px; line-height: 1; padding: 2px 6px; cursor: pointer; color: var(--ink); }
+.mobile-alert .nl-inline.nl-alert button { background: var(--ink); }
+.mobile-buy { background: var(--ink); color: #fff; padding: 10px 12px; display: flex; align-items: center; gap: 12px; }
+.mobile-buy__icon { width: 44px; height: 44px; flex-shrink: 0; background: #fff; color: var(--blue); display: flex; align-items: center; justify-content: center; }
+.mobile-buy__cta { flex-shrink: 0; background: var(--blue); color: #fff; text-decoration: none; font-weight: 800; font-size: 14px; padding: 13px 14px; white-space: nowrap; }
+.mobile-buy__cta:hover { background: var(--blue-dark); color: #fff; }
 
 /* ---------- newsletter modal ---------- */
 .modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(17, 17, 16, 0.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 20px; }
