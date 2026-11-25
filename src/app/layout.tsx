@@ -21,9 +21,22 @@ export const metadata: Metadata = {
     "HouseholdMe tests household products in a real home. Independent buying guides and reviews for kitchen, cleaning, sleep and home.",
 };
 
+// Google tag (Google Ads conversion measurement for householdme.com), loaded on every page.
+const GOOGLE_TAG_ID = "AW-18054504085";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${schibsted.variable} ${plexMono.variable}`}>
+      <head>
+        <script async src={`https://www.googletagmanager.com/gtm.js?id=${GOOGLE_TAG_ID}`} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
